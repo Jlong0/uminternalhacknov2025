@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClinicConnect - AI Powered Healthcare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(var(--border))",
+                        input: "hsl(var(--input))",
+                        ring: "hsl(var(--ring))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        primary: {
+                            DEFAULT: "hsl(var(--primary))",
+                            foreground: "hsl(var(--primary-foreground))",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(var(--secondary))",
+                            foreground: "hsl(var(--secondary-foreground))",
+                        },
+                        destructive: {
+                            DEFAULT: "hsl(var(--destructive))",
+                            foreground: "hsl(var(--destructive-foreground))",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(var(--muted))",
+                            foreground: "hsl(var(--muted-foreground))",
+                        },
+                        accent: {
+                            DEFAULT: "hsl(var(--accent))",
+                            foreground: "hsl(var(--accent-foreground))",
+                        },
+                        popover: {
+                            DEFAULT: "hsl(var(--popover))",
+                            foreground: "hsl(var(--popover-foreground))",
+                        },
+                        card: {
+                            DEFAULT: "hsl(var(--card))",
+                            foreground: "hsl(var(--card-foreground))",
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        
+        /* Fancy Background Animation */
+        .fancy-bg {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Define CSS variables for Tailwind to use */
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --primary: 221.2 83.2% 53.3%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 221.2 83.2% 53.3%;
+            --radius: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground font-sans antialiased animate-fade-in">
+    <div class="min-h-screen bg-background">
+        <!-- Announcement Banner -->
+        <div id="announcement-banner" class="hidden bg-primary text-primary-foreground px-4 py-2 text-center text-sm font-medium">
+            <span id="announcement-text"></span>
+        </div>
+
+        <!-- Header -->
+        <header class="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50" data-aos="fade-down">
+            <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <i data-lucide="heart" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <span class="clinic-name-target text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                        ClinicConnect
+                    </span>
+                </div>
+
+                <nav class="hidden md:flex items-center gap-6 text-sm">
+                    <button class="text-muted-foreground hover:text-primary transition-colors font-medium">
+                        For Patients
+                    </button>
+                    <button class="text-muted-foreground hover:text-primary transition-colors font-medium">
+                        For Clinics
+                    </button>
+                    <button class="text-muted-foreground hover:text-primary transition-colors font-medium">Pricing</button>
+                </nav>
+
+                <div class="flex items-center gap-3">
+                    <button onclick="window.location.href='login_mock.html'" class="text-sm font-medium px-4 py-2 rounded-md hover:bg-secondary transition-colors">
+                        Login
+                    </button>
+                    <button onclick="window.location.href='login_mock.html'" class="text-sm font-medium shadow-lg hover:shadow-xl bg-primary text-primary-foreground px-4 py-2 rounded-md transition-all">
+                        Sign Up
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="relative py-24 lg:py-32 overflow-hidden">
+            <!-- Background Gradients -->
+            <div class="absolute inset-0 bg-gradient-to-b from-primary/5 via-accent/5 to-background"></div>
+            <div class="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
+            <div class="absolute bottom-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+
+            <div class="container mx-auto px-4 relative z-10">
+                <div class="max-w-4xl mx-auto text-center" data-aos="zoom-in" data-aos-duration="1000">
+                    <!-- Badge -->
+                    <div class="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-2 mb-8">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-primary"></i>
+                        <span class="text-sm font-semibold text-primary">AI-Powered Healthcare</span>
+                    </div>
+
+                    <h1 id="hero-headline" class="text-5xl md:text-6xl lg:text-7xl font-bold text-balance mb-6 text-foreground leading-tight">
+                        Find the Best Care,
+                        <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Anywhere</span>
+                    </h1>
+                    <p id="hero-subheadline" class="text-lg md:text-xl text-muted-foreground mb-12 text-balance max-w-2xl mx-auto leading-relaxed">
+                        Book appointments with trusted healthcare providers in seconds. AI-powered symptom checking and instant availability across 500+ clinics.
+                    </p>
+
+                    <div class="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+                        <button onclick="window.location.href='patient_chat.html'" class="h-14 px-10 text-lg font-semibold shadow-2xl hover:shadow-primary/50 hover:scale-105 transition-all bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-md flex items-center justify-center transform hover:-translate-y-1">
+                            <i data-lucide="sparkles" class="w-5 h-5 mr-2"></i>
+                            Try it Now
+                        </button>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="grid grid-cols-3 gap-8 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="200">
+                        <div class="text-center">
+                            <p id="stat-clinics" class="text-3xl font-bold text-foreground mb-1">500+</p>
+                            <p class="text-sm text-muted-foreground">Verified Clinics</p>
+                        </div>
+                        <div class="text-center">
+                            <p id="stat-patients" class="text-3xl font-bold text-foreground mb-1">50K+</p>
+                            <p class="text-sm text-muted-foreground">Happy Patients</p>
+                        </div>
+                        <div class="text-center">
+                            <p id="stat-rating" class="text-3xl font-bold text-foreground mb-1">4.9★</p>
+                            <p class="text-sm text-muted-foreground">Average Rating</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Value Props -->
+        <section class="py-24 bg-gradient-to-b from-background to-secondary/20">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16" data-aos="fade-up">
+                    <h2 class="text-3xl md:text-4xl font-bold text-foreground mb-4">Why Choose <span class="clinic-name-target">ClinicConnect</span>?</h2>
+                    <p class="text-lg text-muted-foreground">Everything you need for seamless healthcare booking</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <!-- Prop 1 -->
+                    <div class="bg-card border border-border rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all group relative overflow-hidden" data-aos="fade-up" data-aos-delay="100">
+                        <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="relative z-10">
+                            <div class="w-14 h-14 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                                <i data-lucide="sparkles" class="w-7 h-7 text-white"></i>
+                            </div>
+                            <h3 id="prop1-title" class="text-xl font-bold mb-3 text-foreground">AI Symptom Checker</h3>
+                            <p id="prop1-desc" class="text-muted-foreground leading-relaxed">
+                                Get personalized care recommendations powered by advanced AI. Understand your symptoms and find the right specialist in seconds.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Prop 2 -->
+                    <div class="bg-card border border-border rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all group relative overflow-hidden" data-aos="fade-up" data-aos-delay="200">
+                        <div class="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="relative z-10">
+                            <div class="w-14 h-14 bg-gradient-to-br from-indigo-600 to-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                                <i data-lucide="calendar" class="w-7 h-7 text-white"></i>
+                            </div>
+                            <h3 id="prop2-title" class="text-xl font-bold mb-3 text-foreground">Instant Booking</h3>
+                            <p id="prop2-desc" class="text-muted-foreground leading-relaxed">
+                                Access real-time availability across 500+ clinics and book appointments instantly. No phone calls, no waiting—just fast, efficient scheduling.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Prop 3 -->
+                    <div class="bg-card border border-border rounded-2xl p-8 hover:shadow-2xl hover:scale-105 transition-all group relative overflow-hidden" data-aos="fade-up" data-aos-delay="300">
+                        <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="relative z-10">
+                            <div class="w-14 h-14 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                                <i data-lucide="shield" class="w-7 h-7 text-white"></i>
+                            </div>
+                            <h3 id="prop3-title" class="text-xl font-bold mb-3 text-foreground">Verified Reviews</h3>
+                            <p id="prop3-desc" class="text-muted-foreground leading-relaxed">
+                                Every review is verified from real patients. Make informed decisions with transparent ratings and detailed feedback from our community.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="border-t border-border bg-card/50 backdrop-blur-sm py-12">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div class="flex items-center gap-2">
+                        <img src="syncure_logo.png" alt="Syncure Logo" class="w-10 h-10 rounded-xl shadow-lg object-cover">
+                        <span class="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                            Powered by Syncure
+                        </span>
+                    </div>
+                    <div class="flex gap-8 text-sm text-muted-foreground">
+                        <button class="hover:text-primary transition-colors font-medium">Privacy</button>
+                        <button class="hover:text-primary transition-colors font-medium">Terms</button>
+                        <button class="hover:text-primary transition-colors font-medium">Contact</button>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        AOS.init({
+            once: true,
+            offset: 50,
+            duration: 800,
+            easing: 'ease-out-cubic',
+        });
+        lucide.createIcons();
+
+        // Load Site Config
+        async function loadSiteConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                
+                // Banner
+                if (config.banner && config.banner.active && config.banner.text) {
+                    const banner = document.getElementById('announcement-banner');
+                    const text = document.getElementById('announcement-text');
+                    text.textContent = config.banner.text;
+                    banner.classList.remove('hidden');
+                }
+
+                // Clinic Name
+                if (config.clinic_name) {
+                    // Update Title
+                    document.title = `${config.clinic_name} - AI Powered Healthcare`;
+                    
+                    // Update all elements with class 'clinic-name-target'
+                    const elements = document.querySelectorAll('.clinic-name-target');
+                    elements.forEach(el => {
+                        el.textContent = config.clinic_name;
+                    });
+                }
+
+                // Hero Section
+                if (config.hero) {
+                    if (config.hero.headline) {
+                        // Handle the span inside the h1
+                        const headlineEl = document.getElementById('hero-headline');
+                        // We want to keep the span styling for the last word if possible, 
+                        // but for simplicity in this dynamic update, we might just replace the text.
+                        // Or we can try to be smart. Let's just replace the text for now to be safe.
+                        // Actually, let's try to preserve the span if the user didn't provide HTML.
+                        // But the user input is plain text. 
+                        // Let's just set the text content. It loses the gradient on the last word but it works.
+                        // To keep it fancy, we could split the last word.
+                        const words = config.hero.headline.split(' ');
+                        if (words.length > 1) {
+                            const lastWord = words.pop();
+                            headlineEl.innerHTML = `${words.join(' ')} <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">${lastWord}</span>`;
+                        } else {
+                            headlineEl.textContent = config.hero.headline;
+                        }
+                    }
+                    if (config.hero.subheadline) document.getElementById('hero-subheadline').textContent = config.hero.subheadline;
+                    
+                    if (config.hero.stats) {
+                        if (config.hero.stats.clinics) document.getElementById('stat-clinics').textContent = config.hero.stats.clinics;
+                        if (config.hero.stats.patients) document.getElementById('stat-patients').textContent = config.hero.stats.patients;
+                        if (config.hero.stats.rating) document.getElementById('stat-rating').textContent = config.hero.stats.rating;
+                    }
+                }
+
+                // Value Props
+                if (config.value_props) {
+                    if (config.value_props.prop1) {
+                        if (config.value_props.prop1.title) document.getElementById('prop1-title').textContent = config.value_props.prop1.title;
+                        if (config.value_props.prop1.desc) document.getElementById('prop1-desc').textContent = config.value_props.prop1.desc;
+                    }
+                    if (config.value_props.prop2) {
+                        if (config.value_props.prop2.title) document.getElementById('prop2-title').textContent = config.value_props.prop2.title;
+                        if (config.value_props.prop2.desc) document.getElementById('prop2-desc').textContent = config.value_props.prop2.desc;
+                    }
+                    if (config.value_props.prop3) {
+                        if (config.value_props.prop3.title) document.getElementById('prop3-title').textContent = config.value_props.prop3.title;
+                        if (config.value_props.prop3.desc) document.getElementById('prop3-desc').textContent = config.value_props.prop3.desc;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading site config:', error);
+            }
+        }
+
+        loadSiteConfig();
+    </script>
+</body>
+</html>

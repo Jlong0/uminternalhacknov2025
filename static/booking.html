@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment - ClinicConnect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(var(--border))",
+                        input: "hsl(var(--input))",
+                        ring: "hsl(var(--ring))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        primary: {
+                            DEFAULT: "hsl(var(--primary))",
+                            foreground: "hsl(var(--primary-foreground))",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(var(--secondary))",
+                            foreground: "hsl(var(--secondary-foreground))",
+                        },
+                        destructive: {
+                            DEFAULT: "hsl(var(--destructive))",
+                            foreground: "hsl(var(--destructive-foreground))",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(var(--muted))",
+                            foreground: "hsl(var(--muted-foreground))",
+                        },
+                        accent: {
+                            DEFAULT: "hsl(var(--accent))",
+                            foreground: "hsl(var(--accent-foreground))",
+                        },
+                        popover: {
+                            DEFAULT: "hsl(var(--popover))",
+                            foreground: "hsl(var(--popover-foreground))",
+                        },
+                        card: {
+                            DEFAULT: "hsl(var(--card))",
+                            foreground: "hsl(var(--card-foreground))",
+                        },
+                        sidebar: {
+                            DEFAULT: "#1e293b", /* Dark sidebar like the image */
+                            foreground: "#f8fafc",
+                            primary: "hsl(var(--primary))",
+                            "primary-foreground": "hsl(var(--primary-foreground))",
+                            accent: "#334155",
+                            "accent-foreground": "#f8fafc",
+                            border: "#334155",
+                            ring: "hsl(var(--sidebar-ring))",
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        :root {
+            --background: 0 0% 98%; /* Light gray background */
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --primary: 221.2 83.2% 53.3%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 221.2 83.2% 53.3%;
+            --radius: 0.5rem;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Markdown Styles */
+        .prose h1 { font-size: 1.5em; font-weight: bold; margin-bottom: 0.5em; }
+        .prose h2 { font-size: 1.25em; font-weight: bold; margin-top: 1em; margin-bottom: 0.5em; }
+        .prose h3 { font-size: 1.1em; font-weight: bold; margin-top: 1em; margin-bottom: 0.5em; }
+        .prose p { margin-bottom: 0.75em; }
+        .prose ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 0.75em; }
+        .prose ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 0.75em; }
+        .prose li { margin-bottom: 0.25em; }
+        .prose strong { font-weight: bold; }
+        .prose em { font-style: italic; }
+        .prose table { width: 100%; border-collapse: collapse; margin-bottom: 1em; font-size: 0.9em; }
+        .prose th, .prose td { border: 1px solid hsl(var(--border)); padding: 0.5em; text-align: left; }
+        .prose th { background-color: hsl(var(--secondary)); font-weight: bold; }
+        .prose blockquote { border-left: 4px solid hsl(var(--primary)); padding-left: 1em; font-style: italic; color: hsl(var(--muted-foreground)); margin-bottom: 1em; }
+        .prose code { background-color: hsl(var(--secondary)); padding: 0.2em 0.4em; border-radius: 0.25em; font-family: monospace; font-size: 0.9em; }
+        .prose pre { background-color: hsl(var(--secondary)); padding: 1em; border-radius: 0.5em; overflow-x: auto; margin-bottom: 1em; }
+        .prose pre code { background-color: transparent; padding: 0; }
+        .prose hr { border: 0; border-top: 1px solid hsl(var(--border)); margin: 1.5em 0; }
+    </style>
+</head>
+<body class="bg-background text-foreground font-sans antialiased h-screen flex overflow-hidden animate-fade-in">
+
+
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-w-0 bg-background">
+        <!-- Header -->
+        <header class="h-16 border-b border-border bg-card px-6 flex items-center justify-between shrink-0">
+            <button onclick="history.back()" class="flex items-center gap-2 text-xl font-bold hover:text-primary transition-colors">
+                <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                Booking
+            </button>
+            
+            <div class="flex items-center gap-4">
+                <button class="p-2 hover:bg-secondary rounded-full relative">
+                    <i data-lucide="bell" class="w-5 h-5 text-muted-foreground"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+                <div class="h-8 w-px bg-border"></div>
+                <a href="patient_history.html" class="flex items-center gap-3 hover:bg-secondary/50 p-2 rounded-lg transition-colors" title="View Booking History">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-medium" id="header-user-name">Guest</p>
+                        <p class="text-xs text-muted-foreground" id="header-user-email">guest@example.com</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center overflow-hidden">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="w-full h-full">
+                    </div>
+                </a>
+            </div>
+        </header>
+
+        <!-- Content Grid -->
+        <div class="flex-1 overflow-hidden p-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
+                
+                <!-- Left Column: Booking Details (Calendar & Time) -->
+                <div class="lg:col-span-3 flex flex-col gap-6 overflow-y-auto pr-2">
+                    <!-- Calendar Card -->
+                    <div class="bg-card rounded-2xl p-6 shadow-sm border border-border">
+                        <h2 class="font-semibold mb-4">Booking Appointment</h2>
+                        
+                        <!-- Month Navigation -->
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="font-medium" id="currentMonthYear"></span>
+                            <div class="flex gap-1">
+                                <button id="prevMonth" class="p-1 hover:bg-secondary rounded"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                                <button id="nextMonth" class="p-1 hover:bg-secondary rounded"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Calendar Grid -->
+                        <div class="grid grid-cols-7 gap-1 text-center text-sm mb-6" id="calendarGrid">
+                            <!-- Generated by JS -->
+                        </div>
+
+                        <h3 class="font-medium text-sm mb-3" id="selectedDateDisplay"></h3>
+                        
+                        <!-- Time Slots -->
+                        <div class="grid grid-cols-2 gap-2 mb-6" id="timeSlotsGrid">
+                            <!-- Generated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Patient Concerns -->
+                    <div class="bg-card rounded-2xl p-6 shadow-sm border border-border flex-1">
+                        <h2 class="font-semibold mb-3">Patient Concerns</h2>
+                        <textarea class="w-full h-32 p-3 text-sm border border-input rounded-xl bg-secondary/20 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none" placeholder="Describe your symptoms..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Middle Column: Doctor List -->
+                <div class="lg:col-span-6 flex flex-col gap-6 overflow-hidden">
+                    <!-- Search & Filter -->
+                    <div class="flex gap-3">
+                        <div class="relative flex-1">
+                            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"></i>
+                            <input type="text" placeholder="Search Doctor" class="w-full h-10 pl-10 pr-4 rounded-xl border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
+                        </div>
+                        <button class="h-10 px-4 rounded-xl border border-border bg-card flex items-center gap-2 text-sm hover:bg-secondary transition-colors">
+                            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                            Filter
+                        </button>
+                    </div>
+
+                    <!-- Doctor List Grid -->
+                    <div class="overflow-y-auto pr-2 pb-4 grid grid-cols-1 md:grid-cols-2 gap-4" id="doctorList">
+                        <!-- Doctor Cards will be injected here -->
+                    </div>
+                </div>
+
+                <!-- Right Column: AI Assistant -->
+                <div class="lg:col-span-3 bg-card rounded-2xl shadow-sm border border-border overflow-hidden flex flex-col h-[calc(100vh-8rem)] hidden xl:flex">
+                    <div class="p-4 border-b border-border bg-secondary/30">
+                        <h2 class="font-bold text-lg flex items-center gap-2">
+                            <i data-lucide="bot" class="w-5 h-5 text-primary"></i>
+                            Booking Assistant
+                        </h2>
+                        <p class="text-xs text-muted-foreground">Ask me anything about appointments!</p>
+                    </div>
+                    
+                    <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+                        <!-- Messages go here -->
+                        <div class="flex gap-3">
+                            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                <i data-lucide="bot" class="w-4 h-4 text-primary"></i>
+                            </div>
+                            <div class="bg-secondary/50 p-3 rounded-2xl rounded-tl-none text-sm">
+                                Hello! I can help you find a doctor or schedule an appointment. How can I assist you today?
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 border-t border-border bg-background">
+                        <form id="chat-form" class="flex gap-2">
+                            <input type="text" id="chat-input" placeholder="Type your message..." class="flex-1 h-10 px-3 rounded-xl border border-border bg-secondary/20 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
+                            <button type="submit" class="h-10 w-10 bg-primary text-primary-foreground rounded-xl flex items-center justify-center hover:bg-primary/90 transition-colors">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Mock Doctors Data - REMOVED
+        // const doctors = [...]; 
+
+        // Render Doctors
+        const doctorList = document.getElementById('doctorList');
+        
+        async function fetchAndRenderDoctors() {
+            try {
+                const response = await fetch('/api/doctors');
+                const data = await response.json();
+                
+                if (data.success && data.doctors) {
+                    renderDoctors(data.doctors);
+                } else {
+                    console.error("Failed to load doctors");
+                    doctorList.innerHTML = '<p class="text-center text-muted-foreground col-span-2">No doctors available at the moment.</p>';
+                }
+            } catch (e) {
+                console.error("Error fetching doctors", e);
+                doctorList.innerHTML = '<p class="text-center text-muted-foreground col-span-2">Error loading doctors.</p>';
+            }
+        }
+
+        function renderDoctors(doctorsData) {
+            doctorList.innerHTML = doctorsData.map(doc => {
+                // Parse name and specialty if combined
+                let name = doc.doctor_name;
+                let specialty = 'General Practitioner';
+                if (name.includes('(') && name.includes(')')) {
+                    const parts = name.split('(');
+                    name = parts[0].trim();
+                    specialty = parts[1].replace(')', '').trim();
+                }
+
+                // Format time
+                const timeDisplay = `${doc.time_start} - ${doc.time_end}`;
+                const dateDisplay = doc.date || 'Recurring';
+
+                return `
+                <div class="bg-card rounded-2xl p-4 border border-border shadow-sm hover:shadow-md transition-shadow flex gap-4 items-center">
+                    <div class="w-20 h-20 rounded-xl overflow-hidden shrink-0 bg-secondary flex items-center justify-center">
+                        <i data-lucide="user" class="w-10 h-10 text-muted-foreground"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-foreground truncate">${name}</h3>
+                        <div class="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                            <i data-lucide="stethoscope" class="w-3 h-3"></i>
+                            <span>${specialty}</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs font-medium text-foreground mb-3">
+                            <i data-lucide="calendar" class="w-3 h-3"></i>
+                            <span>${dateDisplay}</span>
+                            <i data-lucide="clock" class="w-3 h-3 ml-2"></i>
+                            <span>${timeDisplay}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="bookAppointment('${doc.doctor_name}')" class="flex-1 py-1.5 bg-primary text-primary-foreground text-xs font-medium rounded-lg hover:bg-primary/90 transition-colors">
+                                Book Now
+                            </button>
+                            <button class="px-3 py-1.5 border border-border text-foreground text-xs font-medium rounded-lg hover:bg-secondary transition-colors">
+                                Detail
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+            lucide.createIcons();
+        }
+
+        fetchAndRenderDoctors();
+
+        // User Info Logic
+        function loadUserInfo() {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    const email = user.email || 'Guest';
+                    document.getElementById('header-user-name').textContent = email.split('@')[0];
+                    document.getElementById('header-user-email').textContent = email;
+                } catch (e) {
+                    console.error("Error parsing user data", e);
+                }
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('user');
+            window.location.href = 'main_page.html';
+        }
+
+        loadUserInfo();
+        lucide.createIcons();
+
+        // Calendar Logic
+        const calendarGrid = document.getElementById('calendarGrid');
+        const currentMonthYear = document.getElementById('currentMonthYear');
+        const prevMonthBtn = document.getElementById('prevMonth');
+        const nextMonthBtn = document.getElementById('nextMonth');
+        const selectedDateDisplay = document.getElementById('selectedDateDisplay');
+
+        let currentDate = new Date();
+        let selectedDate = new Date();
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            // Update Header
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+            currentMonthYear.textContent = `${monthNames[month]} ${year}`;
+
+            // Clear Grid
+            calendarGrid.innerHTML = '';
+
+            // Days of Week Headers
+            const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            daysOfWeek.forEach(day => {
+                const el = document.createElement('span');
+                el.className = 'text-muted-foreground text-xs py-2';
+                el.textContent = day;
+                calendarGrid.appendChild(el);
+            });
+
+            // Calculate days
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            const lastDatePrev = new Date(year, month, 0).getDate();
+
+            // Prev Month Padding
+            for (let i = firstDay; i > 0; i--) {
+                const el = document.createElement('span');
+                el.className = 'py-2 text-muted-foreground/50 text-sm';
+                el.textContent = lastDatePrev - i + 1;
+                calendarGrid.appendChild(el);
+            }
+
+            // Current Month Days
+            for (let i = 1; i <= lastDate; i++) {
+                const el = document.createElement('span');
+                el.textContent = i;
+                el.className = 'py-2 rounded cursor-pointer text-sm transition-colors hover:bg-secondary';
+                
+                // Check if selected
+                if (selectedDate.getDate() === i && 
+                    selectedDate.getMonth() === month && 
+                    selectedDate.getFullYear() === year) {
+                    el.className = 'py-2 bg-primary text-primary-foreground rounded cursor-pointer shadow-md shadow-primary/30 text-sm';
+                }
+
+                el.onclick = () => {
+                    selectedDate = new Date(year, month, i);
+                    renderCalendar();
+                    updateSelectedDateDisplay();
+                    fetchBookedTimes(); // Fetch bookings for new date
+                };
+                calendarGrid.appendChild(el);
+            }
+        }
+
+        function updateSelectedDateDisplay() {
+            const options = { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' };
+            selectedDateDisplay.textContent = selectedDate.toLocaleDateString('en-US', options);
+        }
+
+        prevMonthBtn.onclick = () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        };
+
+        nextMonthBtn.onclick = () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        };
+
+        // Time Slot Logic
+        const timeSlotsGrid = document.getElementById('timeSlotsGrid');
+        let selectedTime = null;
+        let bookedTimes = []; // Store booked times for the selected date
+        
+        // Mock available times (could be dynamic based on date)
+        const availableTimes = [
+            "08:00 AM", "09:00 AM", "10:00 AM", 
+            "11:00 AM", "12:30 PM", "01:30 PM",
+            "02:30 PM", "03:30 PM", "04:30 PM"
+        ];
+
+        async function fetchBookedTimes() {
+            if (!selectedDate) return;
+            const dateStr = selectedDate.toISOString().split('T')[0];
+            
+            // Reset selected time if we change dates
+            selectedTime = null; 
+
+            try {
+                const response = await fetch(`/api/bookings?date=${dateStr}`);
+                const data = await response.json();
+                if (data.success) {
+                    bookedTimes = data.bookedTimes || [];
+                } else {
+                    bookedTimes = [];
+                }
+            } catch (e) {
+                console.error("Failed to fetch bookings", e);
+                bookedTimes = [];
+            }
+            renderTimeSlots();
+        }
+
+        function renderTimeSlots() {
+            timeSlotsGrid.innerHTML = '';
+            
+            if (bookedTimes.length > 0) {
+                // Optional: Show a message or just filter
+            }
+
+            availableTimes.forEach(time => {
+                const btn = document.createElement('button');
+                btn.textContent = time;
+                
+                const isBooked = bookedTimes.includes(time);
+
+                if (isBooked) {
+                    // Booked State
+                    btn.className = 'py-2 px-3 text-xs border border-border bg-secondary/50 text-muted-foreground rounded-lg cursor-not-allowed opacity-50 decoration-slice line-through';
+                    btn.disabled = true;
+                    btn.title = "Already booked";
+                } else if (selectedTime === time) {
+                    // Selected State
+                    btn.className = 'py-2 px-3 text-xs border border-primary bg-primary/5 text-primary rounded-lg font-medium transition-all';
+                    btn.onclick = () => {
+                        selectedTime = time;
+                        renderTimeSlots();
+                    };
+                } else {
+                    // Default State
+                    btn.className = 'py-2 px-3 text-xs border border-border rounded-lg hover:border-primary hover:text-primary transition-colors';
+                    btn.onclick = () => {
+                        selectedTime = time;
+                        renderTimeSlots();
+                    };
+                }
+
+                timeSlotsGrid.appendChild(btn);
+            });
+        }
+
+        // Booking Logic
+        async function bookAppointment(doctorName) {
+            if (!selectedDate || !selectedTime) {
+                alert("Please select a date and time first.");
+                return;
+            }
+
+            // Get User Email
+            let userEmail = 'guest@example.com';
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    userEmail = JSON.parse(userStr).email;
+                } catch (e) {}
+            }
+
+            const dateStr = selectedDate.toISOString().split('T')[0];
+
+            if (confirm(`Confirm booking with ${doctorName} on ${dateStr} at ${selectedTime}?`)) {
+                try {
+                    const response = await fetch('/api/book', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            doctorName: doctorName,
+                            date: dateStr,
+                            time: selectedTime,
+                            patientEmail: userEmail,
+                            reason: "General Consultation" // Default reason for now
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        alert("Booking successful!");
+                        fetchBookedTimes(); // Refresh slots
+                    } else {
+                        alert("Booking failed: " + data.message);
+                    }
+                } catch (error) {
+                    alert("Error connecting to server.");
+                    console.error(error);
+                }
+            }
+        }
+
+        // Chat Logic
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const chatMessages = document.getElementById('chat-messages');
+
+        function appendMessage(role, text) {
+            const div = document.createElement('div');
+            div.className = 'flex gap-3 animate-fade-in';
+            
+            if (role === 'assistant') {
+                div.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <i data-lucide="bot" class="w-4 h-4 text-primary"></i>
+                    </div>
+                    <div class="bg-secondary/50 p-3 rounded-2xl rounded-tl-none text-sm prose max-w-none">
+                        ${marked.parse(text)}
+                    </div>
+                `;
+            } else {
+                div.className = 'flex gap-3 flex-row-reverse animate-fade-in';
+                div.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
+                        <i data-lucide="user" class="w-4 h-4 text-primary-foreground"></i>
+                    </div>
+                    <div class="bg-primary text-primary-foreground p-3 rounded-2xl rounded-tr-none text-sm shadow-md shadow-primary/20 prose max-w-none prose-invert">
+                        ${marked.parse(text)}
+                    </div>
+                `;
+            }
+            
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            lucide.createIcons();
+        }
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            // Add User Message
+            appendMessage('user', message);
+            chatInput.value = '';
+
+            // Get User Email
+            let userEmail = 'guest@example.com';
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    userEmail = JSON.parse(userStr).email;
+                } catch (e) {}
+            }
+
+            // Show Loading Indicator (Optional, but good UX)
+            const loadingId = 'loading-' + Date.now();
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = loadingId;
+            loadingDiv.className = 'flex gap-3 animate-fade-in';
+            loadingDiv.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <i data-lucide="bot" class="w-4 h-4 text-primary"></i>
+                </div>
+                <div class="bg-secondary/50 p-3 rounded-2xl rounded-tl-none text-sm flex items-center gap-2">
+                    <span class="w-2 h-2 bg-primary/50 rounded-full animate-bounce"></span>
+                    <span class="w-2 h-2 bg-primary/50 rounded-full animate-bounce delay-75"></span>
+                    <span class="w-2 h-2 bg-primary/50 rounded-full animate-bounce delay-150"></span>
+                </div>
+            `;
+            chatMessages.appendChild(loadingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            lucide.createIcons();
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: message,
+                        context: 'General Knowledge', // Or 'Booking Assistant' if you want specific context
+                        userEmail: userEmail,
+                        sessionId: 'booking_session_' + userEmail // Simple session ID
+                    })
+                });
+
+                const data = await response.json();
+                
+                // Remove Loading
+                document.getElementById(loadingId).remove();
+
+                if (data.response) {
+                    appendMessage('assistant', data.response);
+                } else {
+                    appendMessage('assistant', "Sorry, I couldn't process that.");
+                }
+
+            } catch (error) {
+                document.getElementById(loadingId).remove();
+                appendMessage('assistant', "Sorry, something went wrong. Please try again.");
+                console.error(error);
+            }
+        });
+        // Init
+        renderCalendar();
+        updateSelectedDateDisplay();
+        fetchBookedTimes(); // Initial fetch
+    </script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Booking History - ClinicConnect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(var(--border))",
+                        input: "hsl(var(--input))",
+                        ring: "hsl(var(--ring))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        primary: {
+                            DEFAULT: "hsl(var(--primary))",
+                            foreground: "hsl(var(--primary-foreground))",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(var(--secondary))",
+                            foreground: "hsl(var(--secondary-foreground))",
+                        },
+                        destructive: {
+                            DEFAULT: "hsl(var(--destructive))",
+                            foreground: "hsl(var(--destructive-foreground))",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(var(--muted))",
+                            foreground: "hsl(var(--muted-foreground))",
+                        },
+                        accent: {
+                            DEFAULT: "hsl(var(--accent))",
+                            foreground: "hsl(var(--accent-foreground))",
+                        },
+                        popover: {
+                            DEFAULT: "hsl(var(--popover))",
+                            foreground: "hsl(var(--popover-foreground))",
+                        },
+                        card: {
+                            DEFAULT: "hsl(var(--card))",
+                            foreground: "hsl(var(--card-foreground))",
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        :root {
+            --background: 0 0% 98%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --primary: 221.2 83.2% 53.3%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 221.2 83.2% 53.3%;
+            --radius: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground font-sans antialiased h-screen flex flex-col animate-fade-in">
+
+    <!-- Header -->
+    <header class="h-16 border-b border-border bg-card px-6 flex items-center justify-between shrink-0">
+        <button onclick="history.back()" class="flex items-center gap-2 text-xl font-bold hover:text-primary transition-colors">
+            <i data-lucide="arrow-left" class="w-6 h-6"></i>
+            My History
+        </button>
+        
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="text-right hidden sm:block">
+                    <p class="text-sm font-medium" id="header-user-name">Guest</p>
+                    <p class="text-xs text-muted-foreground" id="header-user-email">guest@example.com</p>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center overflow-hidden">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="w-full h-full">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-auto p-6">
+        <div class="max-w-4xl mx-auto">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-foreground mb-2">Booking History</h1>
+                <p class="text-muted-foreground">View your past and upcoming appointments.</p>
+            </div>
+
+            <div class="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-border flex justify-between items-center">
+                    <h3 class="font-semibold text-lg">All Appointments</h3>
+                    <button onclick="loadHistory()" class="p-2 hover:bg-secondary rounded-full transition-colors" title="Refresh">
+                        <i data-lucide="refresh-cw" class="w-4 h-4 text-muted-foreground"></i>
+                    </button>
+                </div>
+                
+                <div id="history-list" class="divide-y divide-border">
+                    <!-- History Items Injected Here -->
+                    <div class="p-12 text-center text-muted-foreground">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                        <p>Loading history...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Load User Info
+        function loadUserInfo() {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    const email = user.email || 'Guest';
+                    document.getElementById('header-user-name').textContent = email.split('@')[0];
+                    document.getElementById('header-user-email').textContent = email;
+                    return email;
+                } catch (e) {
+                    console.error("Error parsing user data", e);
+                }
+            }
+            return null;
+        }
+
+        const userEmail = loadUserInfo();
+        lucide.createIcons();
+
+        // Load History
+        async function loadHistory() {
+            const listContainer = document.getElementById('history-list');
+            
+            if (!userEmail) {
+                listContainer.innerHTML = `
+                    <div class="p-12 text-center text-muted-foreground">
+                        <i data-lucide="user-x" class="w-12 h-12 mx-auto mb-4 opacity-20"></i>
+                        <p>Please log in to view your booking history.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/patient_history?email=${encodeURIComponent(userEmail)}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    renderHistory(data.appointments);
+                } else {
+                    listContainer.innerHTML = `<p class="p-6 text-center text-destructive">Error: ${data.message}</p>`;
+                }
+            } catch (error) {
+                console.error("Error fetching history:", error);
+                listContainer.innerHTML = '<p class="p-6 text-center text-destructive">Failed to load history.</p>';
+            }
+        }
+
+        function renderHistory(appointments) {
+            const listContainer = document.getElementById('history-list');
+            
+            if (!appointments || appointments.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="p-12 text-center text-muted-foreground">
+                        <i data-lucide="calendar-off" class="w-12 h-12 mx-auto mb-4 opacity-20"></i>
+                        <p>No booking history found.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            // Sort by date (newest first)
+            appointments.sort((a, b) => new Date(b.Date) - new Date(a.Date));
+
+            listContainer.innerHTML = appointments.map(apt => {
+                const date = new Date(apt.Date);
+                const isPast = date < new Date();
+                const statusClass = isPast ? 'bg-secondary text-muted-foreground' : 'bg-green-100 text-green-700';
+                const statusText = isPast ? 'Completed' : 'Upcoming';
+
+                return `
+                <div class="p-6 hover:bg-secondary/20 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in">
+                    <div class="flex items-start gap-4">
+                        <div class="flex flex-col items-center justify-center w-14 h-14 bg-primary/10 rounded-lg text-primary shrink-0">
+                            <span class="text-xs font-bold uppercase">${date.toLocaleString('default', { month: 'short' })}</span>
+                            <span class="text-xl font-bold">${date.getDate()}</span>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg">Appointment with Dr. ${apt.doctor_name}</h4>
+                            <div class="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                                <div class="flex items-center gap-1">
+                                    <i data-lucide="clock" class="w-3 h-3"></i>
+                                    <span>${apt.appoinment_time}</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <i data-lucide="calendar" class="w-3 h-3"></i>
+                                    <span>${apt.Date}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 rounded-full text-xs font-medium ${statusClass}">
+                            ${statusText}
+                        </span>
+                        ${!isPast ? `
+                            <button onclick="cancelBooking('${apt.id}', '${apt.doctor_name}', '${apt.Date}', '${apt.appoinment_time}')" class="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors" title="Cancel Appointment">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `}).join('');
+            lucide.createIcons();
+        }
+
+        async function cancelBooking(id, doctor, date, time) {
+            if (!confirm("Are you sure you want to cancel this appointment?")) return;
+
+            try {
+                const response = await fetch('/api/appointments', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        id: id !== 'undefined' ? id : null,
+                        doctor_name: doctor,
+                        date: date,
+                        time: time
+                    })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert("Appointment cancelled successfully.");
+                    loadHistory(); // Refresh list
+                } else {
+                    alert("Failed to cancel: " + data.message);
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Error connecting to server");
+            }
+        }
+
+        loadHistory();
+    </script>
+</body>
+</html>

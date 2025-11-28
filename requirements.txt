@@ -1,0 +1,8 @@
+streamlit
+requests
+jamaibase
+flask
+pycountry
+fastapi
+python-dotenv
+supabase

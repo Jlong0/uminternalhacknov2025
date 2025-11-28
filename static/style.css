@@ -1,0 +1,68 @@
+/* Basic styling for the main page and login page */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.container {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+}
+
+h1 {
+    color: #007bff;
+    margin-bottom: 20px;
+}
+
+.button-group button, .login-form button {
+    padding: 12px 25px;
+    margin: 10px 5px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+}
+
+#staff-login {
+    background-color: #28a745;
+    color: white;
+}
+#staff-login:hover {
+    background-color: #1e7e34;
+}
+
+#public-access {
+    background-color: #17a2b8;
+    color: white;
+}
+#public-access:hover {
+    background-color: #138496;
+}
+
+.login-form input {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.login-form button[type="submit"] {
+    background-color: #007bff;
+    color: white;
+}
+.login-form button[type="submit"]:hover {
+    background-color: #0056b3;
+}

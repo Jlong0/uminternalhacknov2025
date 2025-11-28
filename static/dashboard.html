@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Dashboard - ClinicConnect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(var(--border))",
+                        input: "hsl(var(--input))",
+                        ring: "hsl(var(--ring))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        primary: {
+                            DEFAULT: "hsl(var(--primary))",
+                            foreground: "hsl(var(--primary-foreground))",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(var(--secondary))",
+                            foreground: "hsl(var(--secondary-foreground))",
+                        },
+                        destructive: {
+                            DEFAULT: "hsl(var(--destructive))",
+                            foreground: "hsl(var(--destructive-foreground))",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(var(--muted))",
+                            foreground: "hsl(var(--muted-foreground))",
+                        },
+                        accent: {
+                            DEFAULT: "hsl(var(--accent))",
+                            foreground: "hsl(var(--accent-foreground))",
+                        },
+                        popover: {
+                            DEFAULT: "hsl(var(--popover))",
+                            foreground: "hsl(var(--popover-foreground))",
+                        },
+                        card: {
+                            DEFAULT: "hsl(var(--card))",
+                            foreground: "hsl(var(--card-foreground))",
+                        },
+                        sidebar: {
+                            DEFAULT: "hsl(var(--sidebar))",
+                            foreground: "hsl(var(--sidebar-foreground))",
+                            primary: "hsl(var(--sidebar-primary))",
+                            "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+                            accent: "hsl(var(--sidebar-accent))",
+                            "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+                            border: "hsl(var(--sidebar-border))",
+                            ring: "hsl(var(--sidebar-ring))",
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --primary: 221.2 83.2% 53.3%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 221.2 83.2% 53.3%;
+            --radius: 0.5rem;
+            --sidebar: 210 40% 98%;
+            --sidebar-foreground: 222.2 84% 4.9%;
+            --sidebar-primary: 221.2 83.2% 53.3%;
+            --sidebar-primary-foreground: 210 40% 98%;
+            --sidebar-accent: 210 40% 96.1%;
+            --sidebar-accent-foreground: 222.2 84% 4.9%;
+            --sidebar-border: 214.3 31.8% 91.4%;
+            --sidebar-ring: 217.2 91.2% 59.8%;
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground font-sans antialiased h-screen flex overflow-hidden animate-fade-in">
+
+    <!-- Sidebar -->
+    <aside class="w-64 border-r border-border bg-sidebar flex flex-col">
+        <div class="p-6 border-b border-sidebar-border">
+            <div class="flex items-center gap-2 mb-1">
+                <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                    <i data-lucide="heart" class="w-5 h-5 text-primary-foreground"></i>
+                </div>
+                <button onclick="window.location.href='main_page.html'" class="text-lg font-semibold text-sidebar-foreground hover:text-primary transition-colors text-left">
+                    <span id="sidebar-clinic-name">ClinicConnect</span>
+                </button>
+            </div>
+            <p class="text-xs text-sidebar-foreground/60 mt-1">Staff Portal</p>
+        </div>
+
+        <nav class="flex-1 p-4 space-y-2">
+            <button onclick="setActiveTab('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors bg-sidebar-accent text-sidebar-primary font-medium">
+                <i data-lucide="users" class="w-5 h-5"></i>
+                <span>Dashboard</span>
+            </button>
+
+            <button onclick="window.location.href='staff_chat.html'" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-sidebar-foreground hover:bg-sidebar-accent/50">
+                <i data-lucide="sparkles" class="w-5 h-5"></i>
+                <span>SOP Chatbot</span>
+            </button>
+
+            <button onclick="setActiveTab('bookings')" id="nav-bookings" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-sidebar-foreground hover:bg-sidebar-accent/50">
+                <i data-lucide="calendar" class="w-5 h-5"></i>
+                <span>My Bookings</span>
+                <span class="ml-auto inline-flex items-center rounded-full border border-transparent bg-secondary px-2.5 py-0.5 text-xs font-semibold text-secondary-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">5</span>
+            </button>
+
+            <button onclick="setActiveTab('settings')" id="nav-settings" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-sidebar-foreground hover:bg-sidebar-accent/50">
+                <i data-lucide="settings" class="w-5 h-5"></i>
+                <span>Clinic Settings</span>
+            </button>
+
+            <button onclick="setActiveTab('editor')" id="nav-editor" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-sidebar-foreground hover:bg-sidebar-accent/50">
+                <i data-lucide="layout" class="w-5 h-5"></i>
+                <span>Website Editor</span>
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-sidebar-border">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full">
+                    <div class="flex h-full w-full items-center justify-center rounded-full bg-primary text-primary-foreground">ST</div>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-sidebar-foreground" id="sidebar-user-name">Dr. Smith</p>
+                    <p class="text-xs text-sidebar-foreground/60" id="sidebar-user-email">staff@clinic.com</p>
+                </div>
+            </div>
+            <button onclick="handleLogout()" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 w-full bg-transparent">
+                Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-auto">
+        <!-- Dashboard Tab -->
+        <div id="tab-dashboard" class="p-8">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-foreground mb-2" id="dashboard-welcome-msg">Good morning, Dr. Smith</h1>
+                <p class="text-muted-foreground">Here's what's happening with your clinic today</p>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+                    <div class="flex flex-col space-y-1.5 p-6 flex-row items-center justify-between pb-2">
+                        <h3 class="tracking-tight text-sm font-medium text-muted-foreground">Today's Appointments</h3>
+                        <i data-lucide="calendar" class="w-4 h-4 text-muted-foreground"></i>
+                    </div>
+                    <div class="p-6 pt-0">
+                        <div class="text-3xl font-bold text-foreground" id="stat-today-count">0</div>
+                        <p class="text-xs text-muted-foreground mt-1">Updated just now</p>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+                    <div class="flex flex-col space-y-1.5 p-6 flex-row items-center justify-between pb-2">
+                        <h3 class="tracking-tight text-sm font-medium text-muted-foreground">Patients This Week</h3>
+                        <i data-lucide="users" class="w-4 h-4 text-muted-foreground"></i>
+                    </div>
+                    <div class="p-6 pt-0">
+                        <div class="text-3xl font-bold text-foreground" id="stat-week-patients">0</div>
+                        <p class="text-xs text-muted-foreground mt-1">Unique patients</p>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+                    <div class="flex flex-col space-y-1.5 p-6 flex-row items-center justify-between pb-2">
+                        <h3 class="tracking-tight text-sm font-medium text-muted-foreground">Average Wait Time</h3>
+                        <i data-lucide="clock" class="w-4 h-4 text-muted-foreground"></i>
+                    </div>
+                    <div class="p-6 pt-0">
+                        <div class="text-3xl font-bold text-foreground" id="stat-wait-time">--</div>
+                        <p class="text-xs text-muted-foreground mt-1">Estimated</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Assistant CTA -->
+            <div class="rounded-xl border bg-card text-card-foreground shadow-sm mb-8 bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5 border-primary/20">
+                <div class="p-6">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="sparkles" class="w-6 h-6 text-primary-foreground"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-foreground mb-2">Ask AI Assistant</h3>
+                            <p class="text-muted-foreground mb-4 leading-relaxed">
+                                Get instant answers about SOPs, patient management, scheduling, and clinic operations. Your AI-powered operations assistant is ready to help.
+                            </p>
+                            <button onclick="window.location.href='staff_chat.html'" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-8 gap-2">
+                                <i data-lucide="message-square" class="w-4 h-4"></i>
+                                Start Conversation
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Today's Appointments -->
+            <div class="rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+                <div class="flex flex-col space-y-1.5 p-6">
+                    <h3 class="font-semibold leading-none tracking-tight">Today's Appointments</h3>
+                    <p class="text-sm text-muted-foreground">Manage your schedule for today</p>
+                </div>
+                <div class="p-6 pt-0">
+                    <div class="space-y-3" id="appointmentsList">
+                        <!-- Appointments injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bookings Tab -->
+        <div id="tab-bookings" class="p-8 hidden">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-foreground mb-2">My Bookings</h1>
+                <p class="text-muted-foreground">View and manage all your appointments</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-12rem)]">
+                <!-- Left: Calendar -->
+                <div class="lg:col-span-4 bg-card rounded-xl border border-border shadow-sm p-6 flex flex-col">
+                    <h3 class="font-semibold mb-4">Select Date</h3>
+                    
+                    <!-- Month Navigation -->
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="font-medium" id="booking-month-year"></span>
+                        <div class="flex gap-1">
+                            <button onclick="changeBookingMonth(-1)" class="p-1 hover:bg-secondary rounded"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                            <button onclick="changeBookingMonth(1)" class="p-1 hover:bg-secondary rounded"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Grid -->
+                    <div class="grid grid-cols-7 gap-1 text-center text-sm mb-2">
+                        <span class="text-muted-foreground text-xs py-2">Sun</span>
+                        <span class="text-muted-foreground text-xs py-2">Mon</span>
+                        <span class="text-muted-foreground text-xs py-2">Tue</span>
+                        <span class="text-muted-foreground text-xs py-2">Wed</span>
+                        <span class="text-muted-foreground text-xs py-2">Thu</span>
+                        <span class="text-muted-foreground text-xs py-2">Fri</span>
+                        <span class="text-muted-foreground text-xs py-2">Sat</span>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1 text-center text-sm" id="booking-calendar-grid">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+
+                <!-- Right: Appointments List -->
+                <div class="lg:col-span-8 bg-card rounded-xl border border-border shadow-sm flex flex-col overflow-hidden">
+                    <div class="p-6 border-b border-border flex justify-between items-center">
+                        <div>
+                            <h3 class="font-semibold text-lg" id="selected-booking-date">Select a date</h3>
+                            <p class="text-sm text-muted-foreground" id="booking-count-text">0 appointments</p>
+                        </div>
+                        <button onclick="refreshBookings()" class="p-2 hover:bg-secondary rounded-full transition-colors" title="Refresh">
+                            <i data-lucide="refresh-cw" class="w-4 h-4 text-muted-foreground"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto p-6 space-y-4" id="full-appointments-list">
+                        <!-- Appointments injected here -->
+                        <div class="text-center text-muted-foreground py-12">
+                            <i data-lucide="calendar-days" class="w-12 h-12 mx-auto mb-3 opacity-20"></i>
+                            <p>Select a date to view appointments</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reschedule Modal -->
+        <div id="reschedule-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 animate-fade-in">
+            <div class="bg-card p-6 rounded-xl shadow-lg w-full max-w-md border border-border">
+                <h3 class="text-lg font-semibold mb-4">Reschedule Appointment</h3>
+                <input type="hidden" id="reschedule-id">
+                
+                <div class="space-y-4">
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium">New Date</label>
+                        <input type="date" id="reschedule-date" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium">New Time</label>
+                        <input type="time" id="reschedule-time" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6">
+                    <button onclick="closeRescheduleModal()" class="px-4 py-2 text-sm font-medium border border-input rounded-md hover:bg-accent">Cancel</button>
+                    <button onclick="confirmReschedule()" class="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90">Confirm</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="tab-settings" class="p-8 hidden">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-foreground mb-2">Clinic Settings</h1>
+                <p class="text-muted-foreground">Manage your clinic information and preferences</p>
+            </div>
+            
+            <!-- Add Doctor Section -->
+            <div class="rounded-xl border border-border bg-card text-card-foreground shadow-sm mb-8">
+                <div class="flex flex-col space-y-1.5 p-6">
+                    <h3 class="font-semibold leading-none tracking-tight">Add New Doctor</h3>
+                    <p class="text-sm text-muted-foreground">Add a new doctor to the duty roster</p>
+                </div>
+                <div class="p-6 pt-0 space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium leading-none" for="doc-name">Doctor Name</label>
+                            <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" id="doc-name" placeholder="Dr. Name">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium leading-none" for="doc-specialty">Specialty</label>
+                            <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" id="doc-specialty" placeholder="e.g. Cardiologist">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium leading-none" for="doc-date">Date</label>
+                            <input type="date" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" id="doc-date">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium leading-none" for="doc-start-time">Start Time</label>
+                            <input type="time" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" id="doc-start-time">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium leading-none" for="doc-end-time">End Time</label>
+                            <input type="time" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" id="doc-end-time">
+                        </div>
+                    </div>
+                    <button onclick="addDoctor()" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
+                        Add Doctor
+                    </button>
+                </div>
+            </div>
+
+            <div class="rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+                <div class="p-12 text-center">
+                    <i data-lucide="settings" class="w-16 h-16 text-muted-foreground mx-auto mb-4"></i>
+                    <h3 class="text-xl font-semibold text-foreground mb-2">Settings Panel</h3>
+                    <p class="text-muted-foreground max-w-md mx-auto">
+                        Clinic profile, operating hours, staff management, and integration settings would be available here.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Website Editor Tab -->
+        <div id="tab-editor" class="p-8 hidden">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-foreground mb-2">Website Editor</h1>
+                <p class="text-muted-foreground">Update content on the main landing page</p>
+            </div>
+            
+            <div class="grid gap-6">
+                <!-- Announcement Banner -->
+                <div class="rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+                    <div class="flex flex-col space-y-1.5 p-6">
+                        <h3 class="font-semibold leading-none tracking-tight">Announcement Banner</h3>
+                        <p class="text-sm text-muted-foreground">This message will appear at the top of the home page</p>
+                    </div>
+                    <div class="p-6 pt-0 space-y-4">
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" for="banner-text">Banner Text</label>
+                            <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" id="banner-text" placeholder="e.g., Flu shots now available!">
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="banner-active" class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary">
+                            <label for="banner-active" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Show Banner</label>
+                        </div>
+                        <button onclick="saveBannerConfig()" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Clinic Info -->
+                <div class="rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+                    <div class="flex flex-col space-y-1.5 p-6">
+                        <h3 class="font-semibold leading-none tracking-tight">Clinic Information</h3>
+                        <p class="text-sm text-muted-foreground">Update clinic name and contact details</p>
+                    </div>
+                    <div class="p-6 pt-0 space-y-4">
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium leading-none" for="clinic-name">Clinic Name</label>
+                            <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" id="clinic-name" placeholder="Syncure">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium leading-none" for="clinic-phone">Phone Number</label>
+                                <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" id="clinic-phone">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium leading-none" for="clinic-email">Email Address</label>
+                                <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" id="clinic-email">
+                            </div>
+                        </div>
+                        <button onclick="saveClinicInfo()" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
+                            Update Info
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Hero Section -->
+                <div class="rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+                    <div class="flex flex-col space-y-1.5 p-6">
+                        <h3 class="font-semibold leading-none tracking-tight">Hero Section</h3>
+                        <p class="text-sm text-muted-foreground">Customize the main landing area</p>
+                    </div>
+                    <div class="p-6 pt-0 space-y-4">
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium leading-none" for="hero-headline">Headline</label>
+                            <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" id="hero-headline" placeholder="Find the Best Care, Anywhere">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium leading-none" for="hero-subheadline">Subheadline</label>
+                            <textarea class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" id="hero-subheadline" placeholder="Book appointments with trusted healthcare providers..."></textarea>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium leading-none" for="hero-stat-clinics">Clinics Count</label>
+                                <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" id="hero-stat-clinics" placeholder="500+">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium leading-none" for="hero-stat-patients">Patients Count</label>
+                                <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" id="hero-stat-patients" placeholder="50K+">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium leading-none" for="hero-stat-rating">Avg Rating</label>
+                                <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" id="hero-stat-rating" placeholder="4.9★">
+                            </div>
+                        </div>
+                        <button onclick="saveHeroConfig()" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
+                            Save Hero Section
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Value Props -->
+                <div class="rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+                    <div class="flex flex-col space-y-1.5 p-6">
+                        <h3 class="font-semibold leading-none tracking-tight">Value Propositions</h3>
+                        <p class="text-sm text-muted-foreground">Edit the three main features displayed</p>
+                    </div>
+                    <div class="p-6 pt-0 space-y-6">
+                        <!-- Prop 1 -->
+                        <div class="space-y-2 border-b border-border pb-4">
+                            <h4 class="text-sm font-semibold">Feature 1</h4>
+                            <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mb-2" id="prop1-title" placeholder="Title (e.g., AI Symptom Checker)">
+                            <textarea class="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm" id="prop1-desc" placeholder="Description..."></textarea>
+                        </div>
+                        <!-- Prop 2 -->
+                        <div class="space-y-2 border-b border-border pb-4">
+                            <h4 class="text-sm font-semibold">Feature 2</h4>
+                            <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mb-2" id="prop2-title" placeholder="Title (e.g., Instant Booking)">
+                            <textarea class="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm" id="prop2-desc" placeholder="Description..."></textarea>
+                        </div>
+                        <!-- Prop 3 -->
+                        <div class="space-y-2">
+                            <h4 class="text-sm font-semibold">Feature 3</h4>
+                            <input class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mb-2" id="prop3-title" placeholder="Title (e.g., Verified Reviews)">
+                            <textarea class="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm" id="prop3-desc" placeholder="Description..."></textarea>
+                        </div>
+                        <button onclick="saveValueProps()" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
+                            Save Features
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Load Config on Start
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                
+                // Banner
+                if (config.banner) {
+                    document.getElementById('banner-text').value = config.banner.text || '';
+                    document.getElementById('banner-active').checked = config.banner.active || false;
+                }
+
+                // Clinic Name
+                if (config.clinic_name) {
+                    document.getElementById('clinic-name').value = config.clinic_name;
+                    document.getElementById('sidebar-clinic-name').textContent = config.clinic_name;
+                }
+
+                // Clinic Info
+                if (config.clinic_info) {
+                    document.getElementById('clinic-phone').value = config.clinic_info.phone || '';
+                    document.getElementById('clinic-email').value = config.clinic_info.email || '';
+                }
+
+                // Hero Section
+                if (config.hero) {
+                    document.getElementById('hero-headline').value = config.hero.headline || '';
+                    document.getElementById('hero-subheadline').value = config.hero.subheadline || '';
+                    if (config.hero.stats) {
+                        document.getElementById('hero-stat-clinics').value = config.hero.stats.clinics || '';
+                        document.getElementById('hero-stat-patients').value = config.hero.stats.patients || '';
+                        document.getElementById('hero-stat-rating').value = config.hero.stats.rating || '';
+                    }
+                }
+
+                // Value Props
+                if (config.value_props) {
+                    if (config.value_props.prop1) {
+                        document.getElementById('prop1-title').value = config.value_props.prop1.title || '';
+                        document.getElementById('prop1-desc').value = config.value_props.prop1.desc || '';
+                    }
+                    if (config.value_props.prop2) {
+                        document.getElementById('prop2-title').value = config.value_props.prop2.title || '';
+                        document.getElementById('prop2-desc').value = config.value_props.prop2.desc || '';
+                    }
+                    if (config.value_props.prop3) {
+                        document.getElementById('prop3-title').value = config.value_props.prop3.title || '';
+                        document.getElementById('prop3-desc').value = config.value_props.prop3.desc || '';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading config:', error);
+            }
+        }
+
+        async function saveBannerConfig() {
+            const text = document.getElementById('banner-text').value;
+            const active = document.getElementById('banner-active').checked;
+            
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        banner: { text, active }
+                    })
+                });
+                const data = await response.json();
+                if (data.success) alert('Banner settings saved!');
+            } catch (error) {
+                console.error('Error saving banner:', error);
+                alert('Failed to save settings.');
+            }
+        }
+
+        async function saveClinicInfo() {
+            const name = document.getElementById('clinic-name').value;
+            const phone = document.getElementById('clinic-phone').value;
+            const email = document.getElementById('clinic-email').value;
+            
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        clinic_name: name,
+                        clinic_info: { phone, email }
+                    })
+                });
+                const data = await response.json();
+                if (data.success) alert('Clinic info updated!');
+            } catch (error) {
+                console.error('Error saving clinic info:', error);
+                alert('Failed to update info.');
+            }
+        }
+
+        async function saveHeroConfig() {
+            const headline = document.getElementById('hero-headline').value;
+            const subheadline = document.getElementById('hero-subheadline').value;
+            const clinics = document.getElementById('hero-stat-clinics').value;
+            const patients = document.getElementById('hero-stat-patients').value;
+            const rating = document.getElementById('hero-stat-rating').value;
+
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        hero: {
+                            headline,
+                            subheadline,
+                            stats: { clinics, patients, rating }
+                        }
+                    })
+                });
+                const data = await response.json();
+                if (data.success) alert('Hero section updated!');
+            } catch (error) {
+                console.error('Error saving hero config:', error);
+                alert('Failed to update hero section.');
+            }
+        }
+
+        async function saveValueProps() {
+            const prop1 = {
+                title: document.getElementById('prop1-title').value,
+                desc: document.getElementById('prop1-desc').value
+            };
+            const prop2 = {
+                title: document.getElementById('prop2-title').value,
+                desc: document.getElementById('prop2-desc').value
+            };
+            const prop3 = {
+                title: document.getElementById('prop3-title').value,
+                desc: document.getElementById('prop3-desc').value
+            };
+
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        value_props: { prop1, prop2, prop3 }
+                    })
+                });
+                const data = await response.json();
+                if (data.success) alert('Value propositions updated!');
+            } catch (error) {
+                console.error('Error saving value props:', error);
+                alert('Failed to update features.');
+            }
+        }
+
+        // Initialize
+        loadConfig();
+        loadDashboardData(); // Load real data
+        
+        // Fetch Dashboard Data
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/dashboard');
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update Stats
+                    document.getElementById('stat-today-count').textContent = data.stats.todayAppointments;
+                    document.getElementById('stat-week-patients').textContent = data.stats.patientsThisWeek;
+                    document.getElementById('stat-wait-time').textContent = data.stats.avgWaitTime;
+                    
+                    // Update Appointments List
+                    renderAppointments(data.appointments);
+                }
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        function renderAppointments(appointments) {
+            const appointmentsList = document.getElementById('appointmentsList');
+            
+            if (!appointments || appointments.length === 0) {
+                appointmentsList.innerHTML = '<p class="text-center text-muted-foreground py-4">No appointments for today.</p>';
+                return;
+            }
+
+            appointmentsList.innerHTML = appointments.map(apt => `
+                <div class="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-secondary/50 transition-colors">
+                    <div class="flex items-center gap-4">
+                        <div class="text-center w-20">
+                            <p class="text-sm font-semibold text-foreground">${apt.appoinment_time}</p>
+                        </div>
+                        <div class="w-px h-10 bg-border"></div>
+                        <div>
+                            <p class="font-medium text-foreground">${apt.patient_name || 'Guest'}</p>
+                            <p class="text-sm text-muted-foreground">Dr. ${apt.doctor_name}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="inline-flex items-center rounded-full border border-transparent bg-secondary px-2.5 py-0.5 text-xs font-semibold text-secondary-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 gap-1">
+                            <i data-lucide="check-circle" class="w-3 h-3"></i>
+                            Confirmed
+                        </div>
+                        <button class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        // Tab Switching
+        function setActiveTab(tabName) {
+            // Hide all tabs
+            document.getElementById('tab-dashboard').classList.add('hidden');
+            document.getElementById('tab-bookings').classList.add('hidden');
+            document.getElementById('tab-settings').classList.add('hidden');
+            document.getElementById('tab-editor').classList.add('hidden');
+
+            // Show active tab
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+
+            // Update nav styles
+            const navItems = ['dashboard', 'bookings', 'settings', 'editor'];
+            navItems.forEach(item => {
+                const btn = document.getElementById(`nav-${item}`);
+                if (item === tabName) {
+                    btn.className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors bg-sidebar-accent text-sidebar-primary font-medium";
+                } else {
+                    btn.className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-sidebar-foreground hover:bg-sidebar-accent/50";
+                }
+            });
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('user');
+            window.location.href = 'main_page.html';
+        }
+
+        // Initialize
+        lucide.createIcons();
+        loadUserInfo();
+
+        function loadUserInfo() {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    const email = user.email || 'Staff';
+                    
+                    // Update Sidebar
+                    const sidebarName = document.getElementById('sidebar-user-name');
+                    const sidebarEmail = document.getElementById('sidebar-user-email');
+                    if (sidebarName) sidebarName.textContent = email;
+                    if (sidebarEmail) sidebarEmail.textContent = email;
+
+                    // Update Dashboard Header
+                    const welcomeMsg = document.getElementById('dashboard-welcome-msg');
+                    if (welcomeMsg) welcomeMsg.textContent = `Good morning, ${email}`;
+                    
+                    // Update Avatar Initials
+                    const initials = email.substring(0, 2).toUpperCase();
+                    const avatars = document.querySelectorAll('.rounded-full.bg-primary.text-primary-foreground');
+                    avatars.forEach(avatar => {
+                        if (avatar.textContent === 'ST') avatar.textContent = initials;
+                    });
+
+                } catch (e) {
+                    console.error("Error parsing user data", e);
+                }
+            }
+        }
+
+        async function addDoctor() {
+            const name = document.getElementById('doc-name').value;
+            const specialty = document.getElementById('doc-specialty').value;
+            const date = document.getElementById('doc-date').value;
+            const startTime = document.getElementById('doc-start-time').value;
+            const endTime = document.getElementById('doc-end-time').value;
+
+            if (!name || !date || !startTime || !endTime) {
+                return alert('Please fill in all required fields (Name, Date, Start Time, End Time).');
+            }
+
+            try {
+                const response = await fetch('/api/doctors', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        doctorName: name,
+                        specialty: specialty,
+                        date: date,
+                        startTime: startTime,
+                        endTime: endTime
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`Doctor ${name} added successfully!`);
+                    // Clear the form
+                    document.getElementById('doc-name').value = '';
+                    document.getElementById('doc-specialty').value = '';
+                    document.getElementById('doc-date').value = '';
+                    document.getElementById('doc-start-time').value = '';
+                    document.getElementById('doc-end-time').value = '';
+                } else {
+                    alert('Failed to add doctor: ' + (result.message || result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error adding doctor:', error);
+                alert('An error occurred while adding the doctor.');
+            }
+        }
+
+        // --- Bookings Tab Logic ---
+        let bookingCurrentDate = new Date();
+        let bookingSelectedDate = null;
+
+        function initBookingsTab() {
+            renderBookingCalendar();
+        }
+
+        function changeBookingMonth(delta) {
+            bookingCurrentDate.setMonth(bookingCurrentDate.getMonth() + delta);
+            renderBookingCalendar();
+        }
+
+        function renderBookingCalendar() {
+            const year = bookingCurrentDate.getFullYear();
+            const month = bookingCurrentDate.getMonth();
+            
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+            document.getElementById('booking-month-year').textContent = `${monthNames[month]} ${year}`;
+
+            const grid = document.getElementById('booking-calendar-grid');
+            grid.innerHTML = '';
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            const lastDatePrev = new Date(year, month, 0).getDate();
+
+            // Prev Month Padding
+            for (let i = firstDay; i > 0; i--) {
+                const el = document.createElement('span');
+                el.className = 'py-2 text-muted-foreground/30 text-sm';
+                el.textContent = lastDatePrev - i + 1;
+                grid.appendChild(el);
+            }
+
+            // Current Month
+            for (let i = 1; i <= lastDate; i++) {
+                const el = document.createElement('div');
+                el.textContent = i;
+                el.className = 'py-2 rounded-lg cursor-pointer text-sm transition-colors hover:bg-secondary relative';
+                
+                // Check if selected
+                if (bookingSelectedDate && 
+                    bookingSelectedDate.getDate() === i && 
+                    bookingSelectedDate.getMonth() === month && 
+                    bookingSelectedDate.getFullYear() === year) {
+                    el.className = 'py-2 bg-primary text-primary-foreground rounded-lg cursor-pointer shadow-md text-sm font-bold';
+                }
+
+                // Check if today
+                const today = new Date();
+                if (today.getDate() === i && today.getMonth() === month && today.getFullYear() === year) {
+                    if (!el.className.includes('bg-primary')) {
+                        el.className += ' border border-primary text-primary font-bold';
+                    }
+                }
+
+                el.onclick = () => {
+                    bookingSelectedDate = new Date(year, month, i);
+                    renderBookingCalendar();
+                    loadBookingsForDate(bookingSelectedDate);
+                };
+                grid.appendChild(el);
+            }
+        }
+
+        async function loadBookingsForDate(date) {
+            const dateStr = date.toISOString().split('T')[0];
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('selected-booking-date').textContent = date.toLocaleDateString('en-US', options);
+            
+            const listContainer = document.getElementById('full-appointments-list');
+            listContainer.innerHTML = '<div class="flex justify-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>';
+
+            try {
+                const response = await fetch(`/api/appointments?date=${dateStr}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    renderFullBookingList(data.appointments);
+                } else {
+                    listContainer.innerHTML = `<p class="text-center text-destructive py-4">Error: ${data.message}</p>`;
+                }
+            } catch (error) {
+                console.error("Error fetching bookings:", error);
+                listContainer.innerHTML = '<p class="text-center text-destructive py-4">Failed to load bookings.</p>';
+            }
+        }
+
+        function renderFullBookingList(appointments) {
+            const listContainer = document.getElementById('full-appointments-list');
+            document.getElementById('booking-count-text').textContent = `${appointments.length} appointments`;
+
+            if (appointments.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center text-muted-foreground py-12 flex flex-col items-center">
+                        <div class="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mb-4">
+                            <i data-lucide="calendar-x" class="w-8 h-8 opacity-50"></i>
+                        </div>
+                        <p class="font-medium">No appointments scheduled</p>
+                        <p class="text-sm">Select another date or add a new booking.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listContainer.innerHTML = appointments.map(apt => `
+                <div class="bg-card border border-border rounded-xl p-4 hover:shadow-md transition-shadow animate-fade-in">
+                    <div class="flex items-start justify-between">
+                        <div class="flex gap-4">
+                            <div class="flex flex-col items-center justify-center w-16 h-16 bg-primary/10 rounded-lg text-primary shrink-0">
+                                <span class="text-lg font-bold">${apt.appoinment_time.substring(0, 5)}</span>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-lg">${apt.patient_name || 'Guest Patient'}</h4>
+                                <div class="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                                    <i data-lucide="user-md" class="w-4 h-4"></i>
+                                    <span>Dr. ${apt.doctor_name}</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-xs text-muted-foreground bg-secondary/50 px-2 py-1 rounded w-fit">
+                                    <i data-lucide="hash" class="w-3 h-3"></i>
+                                    <span>ID: ${apt.id || 'N/A'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="openRescheduleModal('${apt.id}', '${apt.Date}', '${apt.appoinment_time}')" class="p-2 text-muted-foreground hover:text-primary hover:bg-secondary rounded-lg transition-colors" title="Reschedule">
+                                <i data-lucide="calendar-clock" class="w-5 h-5"></i>
+                            </button>
+                            <button onclick="cancelBooking('${apt.id}', '${apt.doctor_name}', '${apt.Date}', '${apt.appoinment_time}')" class="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors" title="Cancel">
+                                <i data-lucide="trash-2" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-border flex gap-4">
+                        <div class="flex-1">
+                            <label class="text-xs font-medium text-muted-foreground mb-1 block">Patient Notes</label>
+                            <p class="text-sm text-foreground bg-secondary/30 p-2 rounded-md min-h-[2.5rem]">
+                                ${apt.notes || 'No notes provided.'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function refreshBookings() {
+            if (bookingSelectedDate) {
+                loadBookingsForDate(bookingSelectedDate);
+            }
+        }
+
+        // --- Reschedule Logic ---
+        function openRescheduleModal(id, date, time) {
+            document.getElementById('reschedule-id').value = id;
+            document.getElementById('reschedule-date').value = date;
+            document.getElementById('reschedule-time').value = time;
+            document.getElementById('reschedule-modal').classList.remove('hidden');
+            document.getElementById('reschedule-modal').classList.add('flex');
+        }
+
+        function closeRescheduleModal() {
+            document.getElementById('reschedule-modal').classList.add('hidden');
+            document.getElementById('reschedule-modal').classList.remove('flex');
+        }
+
+        async function confirmReschedule() {
+            const id = document.getElementById('reschedule-id').value;
+            const newDate = document.getElementById('reschedule-date').value;
+            const newTime = document.getElementById('reschedule-time').value;
+
+            if (!newDate || !newTime) return alert("Please select date and time");
+
+            try {
+                const response = await fetch('/api/appointments', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, newDate, newTime })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert("Appointment rescheduled successfully!");
+                    closeRescheduleModal();
+                    refreshBookings();
+                } else {
+                    alert("Failed to reschedule: " + data.message);
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Error connecting to server");
+            }
+        }
+
+        // --- Cancel Logic ---
+        async function cancelBooking(id, doctor, date, time) {
+            if (!confirm("Are you sure you want to cancel this appointment? This action cannot be undone.")) return;
+
+            try {
+                const response = await fetch('/api/appointments', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        id: id !== 'undefined' ? id : null,
+                        doctor_name: doctor,
+                        date: date,
+                        time: time
+                    })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert("Appointment cancelled successfully.");
+                    refreshBookings();
+                    loadDashboardData(); // Refresh main dashboard stats too
+                } else {
+                    alert("Failed to cancel: " + data.message);
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Error connecting to server");
+            }
+        }
+
+        // Initialize Calendar
+        initBookingsTab();
+    </script>
+</body>
+</html>

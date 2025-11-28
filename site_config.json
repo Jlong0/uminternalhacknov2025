@@ -1,0 +1,34 @@
+{
+    "clinic_name": "Happy Clinic",
+    "banner": {
+        "text": "Buy one free one",
+        "active": true
+    },
+    "clinic_info": {
+        "phone": "+1 (555) 123-4567",
+        "email": "contact@clinicconnect.com"
+    },
+    "hero": {
+        "headline": "Happy Clinic is Niubility",
+        "subheadline": "Your Best Hok Player",
+        "stats": {
+            "clinics": "1",
+            "patients": "1 millions",
+            "rating": "2.0"
+        }
+    },
+    "value_props": {
+        "prop1": {
+            "title": "AI chat bot assistant",
+            "desc": ""
+        },
+        "prop2": {
+            "title": "",
+            "desc": ""
+        },
+        "prop3": {
+            "title": "",
+            "desc": ""
+        }
+    }
+}
