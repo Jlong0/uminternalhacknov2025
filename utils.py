@@ -12,15 +12,24 @@ from datetime import datetime, timedelta
 
 # WARNING: In a production environment, NEVER expose API keys directly in client-side code.
 # Use environment variables (st.secrets) and a secure backend for actual API calls.
-JAMAI_API_KEY = "jamai_pat_2d3ba3ca770ec419edfcce77befa261bfa5fc5411fd6bc12"
-JAMAI_PROJECT_ID = "proj_6afb4c795116266743bd1b22"
-JAMAI_TABLE_ID = "SOP_action_V3" # The ID of your JamAI Action Table
-JAMAI_KNOWLEDGE_TABLE_ID = "SOP Medical Assistant In Primary Health Care Part 3" # The ID of your JamAI Knowledge Table
+JAMAI_API_KEY_PUBLIC = "jamai_pat_30e45ace74e9284c426bf75d0bcb6a87f31d803ab8b13e62"
+JAMAI_PROJECT_ID_PUBLIC = "proj_80b7460a8813de2e8b5b2b61"
+
+JAMAI_API_KEY_BOOKING = "jamai_pat_7c9201cf904fb914e72eca3181711a4970b736616f42145d"
+JAMAI_PROJECT_ID_BOOKING = "proj_4eb8d97ae3ef1590fab7ceda"
+
+JAMAI_API_KEY_STAFF = "jamai_pat_b4d23bae8785364a099f2ed30e33237bd5dafc04cf1c67fc"
+JAMAI_PROJECT_ID_STAFF = "proj_d694b4acbe36d58b664d68de"
+
+#JAMAI_TABLE_ID = "SOP_action_V3" # The ID of your JamAI Action Table
+#JAMAI_KNOWLEDGE_TABLE_ID = "SOP Medical Assistant In Primary Health Care Part 3" # The ID of your JamAI Knowledge Table
 
 # Initialize JamAI client
 # Note: The SDK uses 'token' instead of 'api_key' in newer versions, but we'll use what works.
 # Based on inspection, it seems 'token' is the correct argument name for the init.
-jamai_client = JamAI(token=JAMAI_API_KEY, project_id=JAMAI_PROJECT_ID)
+jamai_client_public = JamAI(token=JAMAI_API_KEY_PUBLIC, project_id=JAMAI_PROJECT_ID_PUBLIC)
+jamai_client_booking = JamAI(token=JAMAI_API_KEY_BOOKING, project_id=JAMAI_PROJECT_ID_BOOKING)
+jamai_client_staff = JamAI(token=JAMAI_API_KEY_STAFF, project_id=JAMAI_PROJECT_ID_STAFF)
 
 def get_duty_list_context():
     """Fetches and formats the duty list from Supabase."""
@@ -135,12 +144,12 @@ def cancel_booking(doctor_name, date, time, patient_email):
         print(f"Cancel Booking Error: {e}")
         return {'success': False, 'message': str(e)}
 
-def get_jam_ai_response(project_id, user_message, model_context, session_id=None, user_email=None):
+
+def get_jam_ai_response(user_message, model_context, ai_type, session_id=None, user_email=None):
     """
     Function to call the JAM AI API using the Table interface.
     This ensures we use the specific project/table configuration (models, prompts) you built in JamAI.
     """
-    
     try:
         # We use the 'add_table_rows' method to send the user message to the table.
         # This triggers the AI column generation based on your table's configuration.
@@ -166,53 +175,44 @@ def get_jam_ai_response(project_id, user_message, model_context, session_id=None
         # Combine User Message with Context
         # We append it so the AI sees it. 
         # Note: This will appear in the 'User' column of your JamAI table.
-        full_message = user_message
-        if duty_context:
-            full_message += duty_context
-        if booking_context:
-            full_message += booking_context
+        full_message = user_message + (duty_context or "") + (booking_context or "") + """
+            SYSTEM INSTRUCTION:
+            You have the ability to book and cancel appointments directly in the database.
 
-        # INJECT TOOL INSTRUCTIONS
-        # We tell the AI to output JSON if it wants to perform an action
-        full_message += """
-        
-        SYSTEM INSTRUCTION:
-        You have the ability to book and cancel appointments directly in the database.
-        
-        1. BOOKING:
-        If the user explicitly asks to book an appointment and provides ALL the following details:
-        - Doctor Name
-        - Date (YYYY-MM-DD format preferred, convert if necessary)
-        - Time (HH:MM format)
-        
-        Then, output a JSON block EXACTLY like this:
-        ```json
-        {
-            "action": "book_appointment",
-            "doctor_name": "Dr. Name",
-            "date": "YYYY-MM-DD",
-            "time": "HH:MM"
-        }
-        ```
-        
-        2. CANCELLATION:
-        If the user explicitly asks to CANCEL an appointment and provides ALL the following details:
-        - Doctor Name
-        - Date (YYYY-MM-DD format preferred)
-        - Time (HH:MM format)
-        
-        Then, output a JSON block EXACTLY like this:
-        ```json
-        {
-            "action": "cancel_appointment",
-            "doctor_name": "Dr. Name",
-            "date": "YYYY-MM-DD",
-            "time": "HH:MM"
-        }
-        ```
+            1. BOOKING:
+            If the user explicitly asks to book an appointment and provides ALL the following details:
+            - Doctor Name
+            - Date (YYYY-MM-DD format preferred, convert if necessary)
+            - Time (HH:MM format)
 
-        If any detail is missing for either action, ask the user for it. Do not output the JSON until you have all 3 details.
-        """
+            Then, output a JSON block EXACTLY like this:
+            ```json
+            {
+                "action": "book_appointment",
+                "doctor_name": "Dr. Name",
+                "date": "YYYY-MM-DD",
+                "time": "HH:MM"
+            }
+            ```
+
+            2. CANCELLATION:
+            If the user explicitly asks to CANCEL an appointment and provides ALL the following details:
+            - Doctor Name
+            - Date (YYYY-MM-DD format preferred)
+            - Time (HH:MM format)
+
+            Then, output a JSON block EXACTLY like this:
+            ```json
+            {
+                "action": "cancel_appointment",
+                "doctor_name": "Dr. Name",
+                "date": "YYYY-MM-DD",
+                "time": "HH:MM"
+            }
+            ```
+
+            If any detail is missing for either action, ask the user for it. Do not output the JSON until you have all 3 details.
+            """
 
         # Prepare row data with metadata for logging
         row_data = {
@@ -228,80 +228,180 @@ def get_jam_ai_response(project_id, user_message, model_context, session_id=None
         # Debugging: Print data being sent
         # print(f"DEBUG: Sending row data to JamAI: {row_data}")
 
-        completion = jamai_client.table.add_table_rows(
-            table_type="action",
-            request=protocol.MultiRowAddRequest(
-                table_id="staff FAQ",
-                data=[{"usr_input": user_message}],
-                stream=False # We wait for the full response for simplicity in this Streamlit app
+        if ai_type == "public":
+            completion = jamai_client_public.table.add_table_rows(
+                table_type="action",
+                request=protocol.MultiRowAddRequest(
+                    table_id="FAQ",
+                    data=[{"usr_input": user_message}],
+                    stream=False  # We wait for the full response for simplicity in this Streamlit app
+                )
             )
-        )
-        
-        # The response structure for add_table_rows (non-streaming) contains the rows.
-        # We need to extract the AI's response from the output column.
-        # Assuming the output column is named 'AI' based on standard JamAI chat tables.
-        
-        if completion.rows and len(completion.rows) > 0:
-            # Get the first row's columns
-            row_columns = completion.rows[0].columns
-            
-            # Debugging: Print received columns to console
-            print(f"DEBUG: Received columns from JamAI: {list(row_columns.keys())}")
-            
-            # Find the 'AI' column or the last column which usually contains the response
-            if "user_output" in row_columns:
-                ai_response = row_columns["user_output"].text
-            else:
-                # Fallback: return the text of the last column
-                ai_response = list(row_columns.values())[-1].text
-            
-            # # --- ACTION PARSING LOGIC ---
-            # # Check if the AI wants to perform an action (Book Appointment)
-            # json_match = re.search(r'```json\s*({.*?})\s*```', ai_response, re.DOTALL)
-            # if json_match:
-            #     try:
-            #         data = json.loads(json_match.group(1))
-            #         action = data.get('action')
-            #
-            #         if action == 'book_appointment':
-            #             print(f"DEBUG: AI triggered booking action: {data}")
-            #
-            #             # Execute the booking
-            #             result = create_booking(
-            #                 doctor_name=data.get('doctor_name'),
-            #                 date=data.get('date'),
-            #                 time=data.get('time'),
-            #                 patient_email=user_email
-            #             )
-            #
-            #             if result['success']:
-            #                 return f"✅ Success! I have booked your appointment with **{data.get('doctor_name')}** on **{data.get('date')}** at **{data.get('time')}**."
-            #             else:
-            #                 return f"❌ I tried to book that for you, but the system returned an error: {result['message']}"
-            #
-            #         elif action == 'cancel_appointment':
-            #             print(f"DEBUG: AI triggered cancellation action: {data}")
-            #
-            #             # Execute the cancellation
-            #             result = cancel_booking(
-            #                 doctor_name=data.get('doctor_name'),
-            #                 date=data.get('date'),
-            #                 time=data.get('time'),
-            #                 patient_email=user_email
-            #             )
-            #
-            #             if result['success']:
-            #                 return f"✅ Success! I have cancelled your appointment with **{data.get('doctor_name')}** on **{data.get('date')}** at **{data.get('time')}**."
-            #             else:
-            #                 return f"❌ I tried to cancel that for you, but I couldn't find a matching booking or an error occurred: {result['message']}"
-            #
-            #     except Exception as e:
-            #         print(f"Error parsing AI action: {e}")
-            #         # If parsing fails, just return the original text (maybe the AI messed up the JSON)
-            #         return ai_response
 
-            print(ai_response)
-            return f"User: {user_message}\n Action Table: {ai_response}"
+            # The response structure for add_table_rows (non-streaming) contains the rows.
+            # We need to extract the AI's response from the output column.
+            # Assuming the output column is named 'AI' based on standard JamAI chat tables.
+
+            if completion.rows and len(completion.rows) > 0:
+                # Get the first row's columns
+                row_columns = completion.rows[0].columns
+
+                # Debugging: Print received columns to console
+                print(f"DEBUG: Received columns from JamAI: {list(row_columns.keys())}")
+
+                # Find the 'AI' column or the last column which usually contains the response
+                if "user_output" in row_columns:
+
+                    ai_response = row_columns["user_output"].text
+                else:
+                    # Fallback: return the text of the last column
+                    ai_response = list(row_columns.values())[-1].text
+
+                # # --- ACTION PARSING LOGIC ---
+                # # Check if the AI wants to perform an action (Book Appointment)
+                # json_match = re.search(r'```json\s*({.*?})\s*```', ai_response, re.DOTALL)
+                # if json_match:
+                #     try:
+                #         data = json.loads(json_match.group(1))
+                #         action = data.get('action')
+                #
+                #         if action == 'book_appointment':
+                #             print(f"DEBUG: AI triggered booking action: {data}")
+                #
+                #             # Execute the booking
+                #             result = create_booking(
+                #                 doctor_name=data.get('doctor_name'),
+                #                 date=data.get('date'),
+                #                 time=data.get('time'),
+                #                 patient_email=user_email
+                #             )
+                #
+                #             if result['success']:
+                #                 return f"✅ Success! I have booked your appointment with **{data.get('doctor_name')}** on **{data.get('date')}** at **{data.get('time')}**."
+                #             else:
+                #                 return f"❌ I tried to book that for you, but the system returned an error: {result['message']}"
+                #
+                #         elif action == 'cancel_appointment':
+                #             print(f"DEBUG: AI triggered cancellation action: {data}")
+                #
+                #             # Execute the cancellation
+                #             result = cancel_booking(
+                #                 doctor_name=data.get('doctor_name'),
+                #                 date=data.get('date'),
+                #                 time=data.get('time'),
+                #                 patient_email=user_email
+                #             )
+                #
+                #             if result['success']:
+                #                 return f"✅ Success! I have cancelled your appointment with **{data.get('doctor_name')}** on **{data.get('date')}** at **{data.get('time')}**."
+                #             else:
+                #                 return f"❌ I tried to cancel that for you, but I couldn't find a matching booking or an error occurred: {result['message']}"
+                #
+                #     except Exception as e:
+                #         print(f"Error parsing AI action: {e}")
+                #         # If parsing fails, just return the original text (maybe the AI messed up the JSON)
+                #         return ai_response
+
+                print(ai_response)
+                return f"User: {user_message}\n Action Table: {ai_response}"
+        elif ai_type == "booking":
+
+            completion = jamai_client_booking.table.add_table_rows(
+                table_type="chat",
+                request=protocol.MultiRowAddRequest(
+                    table_id="test2",
+                    data=[{"User": full_message}],
+                    stream=False  # We wait for the full response for simplicity in this Streamlit app
+                )
+            )
+
+            if completion.rows and len(completion.rows) > 0:
+                # Get the first row's columns
+                row_columns = completion.rows[0].columns
+
+                # Debugging: Print received columns to console
+                print(f"DEBUG: Received columns from JamAI: {list(row_columns.keys())}")
+
+                # Find the 'AI' column or the last column which usually contains the response
+                if "AI" in row_columns:
+                    ai_response = row_columns["AI"].text
+                else:
+                    # Fallback: return the text of the last column
+                    ai_response = list(row_columns.values())[-1].text
+
+
+                # --- ACTION PARSING LOGIC ---
+                # Check if the AI wants to perform an action (Book Appointment)
+                json_match = re.search(r'```json\s*({.*?})\s*```', ai_response, re.DOTALL)
+                if json_match:
+                    try:
+                        data = json.loads(json_match.group(1))
+                        action = data.get('action')
+
+                        if action == 'book_appointment':
+                            print(f"DEBUG: AI triggered booking action: {data}")
+
+                            # Execute the booking
+                            result = create_booking(
+                                doctor_name=data.get('doctor_name'),
+                                date=data.get('date'),
+                                time=data.get('time'),
+                                patient_email=user_email
+                            )
+
+                            if result['success']:
+                                return f"✅ Success! I have booked your appointment with **{data.get('doctor_name')}** on **{data.get('date')}** at **{data.get('time')}**."
+                            else:
+                                return f"❌ I tried to book that for you, but the system returned an error: {result['message']}"
+
+                        elif action == 'cancel_appointment':
+                            print(f"DEBUG: AI triggered cancellation action: {data}")
+
+                            # Execute the cancellation
+                            result = cancel_booking(
+                                doctor_name=data.get('doctor_name'),
+                                date=data.get('date'),
+                                time=data.get('time'),
+                                patient_email=user_email
+                            )
+
+                            if result['success']:
+                                return f"✅ Success! I have cancelled your appointment with **{data.get('doctor_name')}** on **{data.get('date')}** at **{data.get('time')}**."
+                            else:
+                                return f"❌ I tried to cancel that for you, but I couldn't find a matching booking or an error occurred: {result['message']}"
+
+                    except Exception as e:
+                        print(f"Error parsing AI action: {e}")
+                        # If parsing fails, just return the original text (maybe the AI messed up the JSON)
+                        return ai_response
+
+                return ai_response
+
+        elif ai_type == "staff":
+            completion = jamai_client_staff.table.add_table_rows(
+                table_type="action",
+                request=protocol.MultiRowAddRequest(
+                    table_id="SOP_action_V3",
+                    data=[{"User": user_message}],
+                    stream=False  # We wait for the full response for simplicity in this Streamlit app
+                )
+            )
+
+            if completion.rows and len(completion.rows) > 0:
+                # Get the first row's columns
+                row_columns = completion.rows[0].columns
+
+                # Debugging: Print received columns to console
+                print(f"DEBUG: Received columns from JamAI: {list(row_columns.keys())}")
+
+                # Find the 'AI' column or the last column which usually contains the response
+                if "Final_OUTPUT" in row_columns:
+                    ai_response = row_columns["Final_OUTPUT"].text
+                else:
+                    # Fallback: return the text of the last column
+                    ai_response = list(row_columns.values())[-1].text
+
+                return f"User: {user_message}\n Action Table: {ai_response}"
 
         else:
             return "Error: No response received from JamAI Table."
@@ -309,14 +409,14 @@ def get_jam_ai_response(project_id, user_message, model_context, session_id=None
     except Exception as e:
         return f"Error connecting to JamAI: {str(e)}"
 
-def post_chat_table(project_id, user_message, model_context, table_id):
+def post_chat_table(user_message, user, table_id):
 
     try:
 
-        # Determine User Role based on context or state
-        user_role = "Public"
-        if "staff" in model_context.lower():
-            user_role = "Staff"
+        # # Determine User Role based on context or state
+        # user_role = "Public"
+        # if "staff" in model_context.lower():
+        #     user_role = "Staff"
 
         # # Prepare row data with metadata for logging
         # row_data = {
@@ -328,14 +428,26 @@ def post_chat_table(project_id, user_message, model_context, table_id):
         # Debugging: Print data being sent
         print(f"DEBUG chat: Sending row data to JamAI: {user_message}")
 
-        completion = jamai_client.table.add_table_rows(
-            table_type="chat",
-            request=protocol.MultiRowAddRequest(
-                table_id=table_id,
-                data=[{"User": user_message}],
-                stream=False  # We wait for the full response for simplicity in this Streamlit app
+        completion = None
+
+        if user == "staff":
+            completion = jamai_client_staff.table.add_table_rows(
+                table_type="chat",
+                request=protocol.MultiRowAddRequest(
+                    table_id=table_id,
+                    data=[{"User": user_message}],
+                    stream=False  # We wait for the full response for simplicity in this Streamlit app
+                )
             )
-        )
+        elif user == "public":
+            completion = jamai_client_public.table.add_table_rows(
+                table_type="chat",
+                request=protocol.MultiRowAddRequest(
+                    table_id=table_id,
+                    data=[{"User": user_message}],
+                    stream=False  # We wait for the full response for simplicity in this Streamlit app
+                )
+            )
 
         # The response structure for add_table_rows (non-streaming) contains the rows.
         # We need to extract the AI's response from the output column.
@@ -349,8 +461,8 @@ def post_chat_table(project_id, user_message, model_context, table_id):
             print(f"DEBUG: Received columns from JamAI: {list(row_columns.keys())}")
 
             # Find the 'AI' column or the last column which usually contains the response
-            if "user_output" in row_columns:
-                return f"User: {user_message}\n Action Table: {row_columns['user_output'].text}"
+            if "AI" in row_columns:
+                return list(row_columns.values())[0].text
             else:
                 # Fallback: return the text of the last column
                 return list(row_columns.values())[-1].text
@@ -360,29 +472,48 @@ def post_chat_table(project_id, user_message, model_context, table_id):
     except Exception as e:
         return f"Error connecting to JamAI: {str(e)}"
 
-def create_new_chat_table(table_id_src):
+def create_new_chat_table(table_id_src, user):
     new_table_id = f"chat_{str(uuid.uuid4())[:8]}"
 
     try:
-        jamai_client.table.duplicate_table(
-            table_type="chat",
-            table_id_src=table_id_src,  # Your base agent ID
-            table_id_dst=new_table_id,
-            include_data=True,
-            create_as_child=True
-        )
+        if user == "staff":
+            jamai_client_staff.table.duplicate_table(
+                table_type="chat",
+                table_id_src=table_id_src,  # Your base agent ID
+                table_id_dst=new_table_id,
+                include_data=True,
+                create_as_child=True
+            )
+        elif user == "public":
+            jamai_client_public.table.duplicate_table(
+                table_type="chat",
+                table_id_src=table_id_src,  # Your base agent ID
+                table_id_dst=new_table_id,
+                include_data=True,
+                create_as_child=True
+            )
         return new_table_id
     except Exception as e:
         print(f"Error creating new chat: {str(e)}")
         return None
 
-def delete_table(table_type, table_id):
+def delete_table(table_type, table_id, user):
     try:
-        jamai_client.table.delete_table(
-            table_type=table_type,
-            table_id=table_id,
-        )
-        return True
+        if user == "staff":
+            jamai_client_staff.table.delete_table(
+                table_type=table_type,
+                table_id=table_id,
+            )
+            return True
+        elif user == "public":
+            jamai_client_public.table.delete_table(
+                table_type=table_type,
+                table_id=table_id,
+            )
+            return True
+        else:
+            print("unable to delete")
+            return False
     except Exception as e:
         print(f"Error deleting chat: {str(e)}")
         return False
@@ -403,30 +534,50 @@ def get_chat_history(current_session):
     try:
         session_id = current_session.get("id")
         table_id = current_session.get("table_id")
+        user = current_session.get("user")
         print(f"DEBUG: Fetching history for session_id: '{session_id}'")
         
         all_items = []
         offset = 0
         limit = 100
         max_pages = 30 # Fetch up to 3000 rows
-        
-        for _ in range(max_pages):
-            response = jamai_client.table.list_table_rows(
-                table_type="chat",
-                table_id=table_id,
-                limit=limit,
-                offset=offset
-            )
-            
-            if not response.items:
-                break
-                
-            all_items.extend(response.items)
-            
-            if len(response.items) < limit:
-                break
-                
-            offset += limit
+
+        if user == "staff":
+            for _ in range(max_pages):
+                response = jamai_client_staff.table.list_table_rows(
+                    table_type="chat",
+                    table_id=table_id,
+                    limit=limit,
+                    offset=offset
+                )
+
+                if not response.items:
+                    break
+
+                all_items.extend(response.items)
+
+                if len(response.items) < limit:
+                    break
+
+                offset += limit
+        elif user == "public":
+            for _ in range(max_pages):
+                response = jamai_client_public.table.list_table_rows(
+                    table_type="chat",
+                    table_id=table_id,
+                    limit=limit,
+                    offset=offset
+                )
+
+                if not response.items:
+                    break
+
+                all_items.extend(response.items)
+
+                if len(response.items) < limit:
+                    break
+
+                offset += limit
         
         history = []
         if all_items:
@@ -522,15 +673,22 @@ def get_chat_history(current_session):
             "timestamp": "System"
         }]
 
-def embed_file_in_jamai(file_path, table_id=JAMAI_TABLE_ID):
+def embed_file_in_jamai(file_path, selected_upload_mode):
     """
     Embeds a file into a JamAI table.
     """
     try:
-        response = jamai_client.table.embed_file(
-            file_path=file_path,
-            table_id=table_id,
-        )
+        response = None
+        if selected_upload_mode == "staff":
+            response = jamai_client_staff.table.embed_file(
+                file_path=file_path,
+                table_id="Uploaded",
+            )
+        elif selected_upload_mode == "public":
+            response = jamai_client_public.table.embed_file(
+                file_path=file_path,
+                table_id="Uploaded",
+            )
         return response
     except Exception as e:
         print(f"Error embedding file: {e}")

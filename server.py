@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, send_from_directory
-from utils import delete_table, create_new_chat_table, post_chat_table, get_jam_ai_response, get_chat_history, embed_file_in_jamai, JAMAI_PROJECT_ID, JAMAI_KNOWLEDGE_TABLE_ID
+from utils import delete_table, create_new_chat_table, post_chat_table, get_jam_ai_response, get_chat_history, embed_file_in_jamai
 from auth import login_user, sign_up_user, supabase_staff
 import os
 import json
@@ -67,6 +67,8 @@ def chat_endpoint():
     data = request.json
     user_message = data.get('message')
     table_id = data.get('table_id')
+    ai_type = data.get("ai_type")
+    print(ai_type)
     # Context determines if it's 'General Knowledge' (Patient) or 'Staff'
     context = data.get('context', 'General Knowledge') 
     user_email = data.get('userEmail') # Get user email from request
@@ -78,9 +80,19 @@ def chat_endpoint():
         # Call the existing utility function
         # Generate a simple session ID for Flask requests or use one from the client if sent
         session_id = data.get('sessionId', 'flask_session')
-        action_ai_response = get_jam_ai_response(JAMAI_PROJECT_ID, user_message, context, session_id=session_id, user_email=user_email)
-        ai_response = post_chat_table(JAMAI_PROJECT_ID, action_ai_response, context, table_id)
-        return jsonify({'response': ai_response})
+        action_ai_response = get_jam_ai_response(user_message, context, ai_type, session_id=session_id, user_email=user_email)
+        if ai_type == "public":
+            ai_response = post_chat_table(action_ai_response, ai_type, table_id)
+            print(ai_response)
+            return jsonify({'response': ai_response})
+        elif ai_type == "booking":
+            print(action_ai_response)
+            return jsonify({'response': action_ai_response})
+        elif ai_type == "staff":
+            ai_response = post_chat_table(action_ai_response, ai_type, table_id)
+            print(ai_response)
+            return jsonify({'response': ai_response})
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -88,6 +100,7 @@ def chat_endpoint():
 def history_endpoint():
     data = request.json
     current_session = data.get("session")
+    print(current_session)
 
     if not current_session:
         return jsonify({'error': 'Session ID is required'}), 400
@@ -102,30 +115,32 @@ def history_endpoint():
 def new_chat_table_endpoint():
     data = request.json
     base_table_id = data.get("base_table_id")
+    user = data.get("user")
 
     if not base_table_id:
         return {"error": "Missing base_table_id"}, 400
 
-    new_table_id = create_new_chat_table(base_table_id)
+    new_table_id = create_new_chat_table(base_table_id, user)
+    print(new_table_id)
 
     if new_table_id is None:
         return {"error": "Failed to create chat table"}, 500
 
-    return {"table_id": new_table_id}
+    return {"table_id": new_table_id, "user": user}
 
 
 @app.route("/api/deleteChatTable", methods=["DELETE"])
 def delete_chat_endpoint():
     data = request.json
     current_session = data.get('session')
+    user = current_session.get('user')
     table_id = current_session.get('table_id')
-    print(table_id)
 
     if not table_id:
         return {"error": "Missing table_id"}, 400
 
     try:
-        success = delete_table("chat",table_id)  # Your function to delete the table
+        success = delete_table("chat", table_id, user)  # Your function to delete the table
         if not success:
             return {"error": "Failed to delete chat table"}, 500
 
@@ -216,6 +231,7 @@ def upload_file():
         return jsonify({'error': 'No file part'}), 400
     
     file = request.files['file']
+    selected_upload_mode = request.form.get('selectedUploadMode')
     
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
@@ -232,7 +248,7 @@ def upload_file():
             # Embed the file
             # Note: You might want to use different tables for staff vs patient if needed
             # We use the 'Uploaded' Knowledge Table for file storage
-            response = embed_file_in_jamai(tmp_path, table_id=JAMAI_KNOWLEDGE_TABLE_ID)
+            response = embed_file_in_jamai(tmp_path, selected_upload_mode)
             
             # Clean up the temp file
             os.unlink(tmp_path)

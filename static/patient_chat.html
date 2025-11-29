@@ -282,7 +282,8 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    base_table_id: "niceguy"   // e.g. "consultation_template"
+                    base_table_id: "niceguy",
+                    user: "public"
                 })
             });
 
@@ -300,6 +301,7 @@
             let newSession = {
                 id: sessionId,
                 table_id: data.table_id,  // ← store table ID here
+                user: data.user,
                 title: "New Conversation",
                 timestamp: new Date().toISOString()
             };
@@ -308,10 +310,10 @@
             sessions.unshift(newSession);
             localStorage.setItem('patientSessions', JSON.stringify(sessions));
 
-                    messages = [];
-                    renderMessages();
-                    renderHistoryList();
-                }
+            messages = [];
+            renderMessages();
+            renderHistoryList();
+        }
 
         // Render Sidebar History
         function renderHistoryList() {
@@ -376,10 +378,11 @@
             const response = fetch(`/api/deleteChatTable`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ session: currentSession })
+                body: JSON.stringify({
+                    session: currentSession,
+                })
             });
 
-            print(response)
 
         }
 
@@ -554,7 +557,8 @@
                         context: 'General Knowledge',
                         sessionId: sessionId,
                         userEmail: userEmail,
-                        table_id: currentSession.table_id
+                        table_id: currentSession.table_id,
+                        ai_type: "public"
                     })
                 });
                 
@@ -668,6 +672,7 @@
                 const file = input.files[0];
                 const formData = new FormData();
                 formData.append('file', file);
+                formData.append('function', 'upload')
 
                 // Show uploading state
                 const loadingMsgId = Date.now();

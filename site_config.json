@@ -1,5 +1,5 @@
 {
-    "clinic_name": "Happy Clinic",
+    "clinic_name": "YiJiaRen Clinic",
     "banner": {
         "text": "Buy one free one",
         "active": true
@@ -9,8 +9,8 @@
         "email": "contact@clinicconnect.com"
     },
     "hero": {
-        "headline": "Happy Clinic is Niubility",
-        "subheadline": "Your Best Hok Player",
+        "headline": "YiJiaRen Clinic is Niubility",
+        "subheadline": "Your Best Trusted Clinic",
         "stats": {
             "clinics": "1",
             "patients": "1 millions",

@@ -256,7 +256,8 @@
 
     <script>
         // Mock Doctors Data - REMOVED
-        // const doctors = [...]; 
+        // const doctors = [...];
+
 
         // Render Doctors
         const doctorList = document.getElementById('doctorList');
@@ -623,6 +624,7 @@
             lucide.createIcons();
 
             try {
+                console.log("hiihihih")
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -630,7 +632,9 @@
                         message: message,
                         context: 'General Knowledge', // Or 'Booking Assistant' if you want specific context
                         userEmail: userEmail,
-                        sessionId: 'booking_session_' + userEmail // Simple session ID
+                        sessionId: 'booking_session_' + userEmail, // Simple session ID
+                        table_id: "booking",
+                        ai_type: "booking",
                     })
                 });
 

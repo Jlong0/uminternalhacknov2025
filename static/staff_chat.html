@@ -230,15 +230,49 @@
         <div class="border-t border-border bg-card p-4 shrink-0">
             <div class="max-w-3xl mx-auto">
                 <div class="flex gap-2">
+
+                    <!-- Hidden file input -->
                     <input type="file" id="fileInput" class="hidden" onchange="handleFileUpload(this)">
-                    <button onclick="document.getElementById('fileInput').click()" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 w-10 flex-shrink-0" title="Upload File">
-                        <i data-lucide="paperclip" class="w-4 h-4"></i>
-                    </button>
-                    <input id="chatInput" type="text" placeholder="Ask about operations, SOPs, or scheduling..." class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 flex-1">
-                    <button onclick="sendMessage()" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 w-10 flex-shrink-0 shadow-lg">
+
+                    <!-- Upload Menu Button -->
+                    <div class="relative">
+                        <button onclick="toggleUploadMenu()"
+                                class="inline-flex items-center justify-center rounded-md text-sm font-medium
+                                       border border-input bg-background hover:bg-accent hover:text-accent-foreground
+                                       h-10 w-10 transition-colors shadow-sm"
+                                title="Upload File">
+                            <i data-lucide="paperclip" class="w-4 h-4"></i>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="uploadMenu"
+                             class="hidden absolute left-0 bottom-full mb-2 w-48 bg-card border border-border
+                                    rounded-md shadow-lg z-50">
+                            <button onclick="chooseUploadMode('staff')"
+                                    class="w-full text-left px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground">
+                                Upload to Staff Database
+                            </button>
+                            <button onclick="chooseUploadMode('public')"
+                                    class="w-full text-left px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground">
+                                Upload to Public Database
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input -->
+                    <input id="chatInput" type="text"
+                        placeholder="Ask about operations, SOPs, or scheduling..."
+                        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+
+                    <!-- Send Button -->
+                    <button onclick="sendMessage()"
+                            class="inline-flex items-center justify-center rounded-md text-sm font-medium
+                                   bg-primary text-primary-foreground hover:bg-primary/90
+                                   h-10 w-10 flex-shrink-0 shadow-lg">
                         <i data-lucide="send" class="w-4 h-4"></i>
                     </button>
                 </div>
+
                 <p class="text-xs text-muted-foreground mt-2 text-center">
                     Staff-only AI Assistant for clinic operations
                 </p>
@@ -256,9 +290,45 @@
             initNewSession();
         }
 
-        function initNewSession() {
+        async function initNewSession() {
             sessionId = 'staff_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
             localStorage.setItem('staffSessionId', sessionId);
+
+            const response = await fetch('/api/newChatTable', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    base_table_id: "Digital sister",
+                    user: "staff"
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                console.error("Failed to create new chat table:", data.error);
+                alert("Could not create chat table. Try again.");
+                return;
+            }
+
+            //const newChatTableId = data.table_id
+
+            // 3. Store the table ID with the session
+            let newSession = {
+                id: sessionId,
+                table_id: data.table_id,  // ← store table ID here
+                user: data.user,
+                title: "New Conversation",
+                timestamp: new Date().toISOString()
+            };
+
+            console.log("NEW SESSION CREATED:", newSession);
+
+
+            // Save to session history (localStorage)
+            sessions.unshift(newSession);
+            localStorage.setItem('staffSessions', JSON.stringify(sessions));
+
             messages = [];
             renderMessages();
             renderHistoryList();
@@ -268,17 +338,24 @@
         function renderHistoryList() {
             const historyList = document.getElementById('historyList');
             historyList.innerHTML = sessions.map(session => `
-                <button onclick="switchSession('${session.id}')" class="w-full text-left p-3 rounded-lg transition-colors group ${session.id === sessionId ? 'bg-sidebar-accent text-sidebar-primary' : 'hover:bg-sidebar-accent'}">
-                    <div class="flex items-start gap-2">
-                        <i data-lucide="message-square" class="w-4 h-4 ${session.id === sessionId ? 'text-sidebar-primary' : 'text-sidebar-foreground/60'} mt-0.5 flex-shrink-0"></i>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm ${session.id === sessionId ? 'font-medium' : 'text-sidebar-foreground'} truncate">
-                                ${session.title}
-                            </p>
-                            <p class="text-xs text-sidebar-foreground/50 mt-1">${new Date(session.timestamp).toLocaleDateString()}</p>
+                <div class="group flex items-center justify-between p-3 rounded-lg transition-colors">
+                    <button onclick="switchSession('${session.id}')" class="w-full text-left p-3 rounded-lg transition-colors group ${session.id === sessionId ? 'bg-sidebar-accent text-sidebar-primary' : 'hover:bg-sidebar-accent'}">
+                        <div class="flex items-start gap-2">
+                            <i data-lucide="message-square" class="w-4 h-4 ${session.id === sessionId ? 'text-sidebar-primary' : 'text-sidebar-foreground/60'} mt-0.5 flex-shrink-0"></i>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm ${session.id === sessionId ? 'font-medium' : 'text-sidebar-foreground'} truncate">
+                                    ${session.title}
+                                </p>
+                                <p class="text-xs text-sidebar-foreground/50 mt-1">${new Date(session.timestamp).toLocaleDateString()}</p>
+                            </div>
                         </div>
-                    </div>
-                </button>
+                    </button>
+
+                    <button onclick="deleteSession('${session.id}')"
+                        class="hidden group-hover:flex p-2 rounded-md hover:bg-red-500 hover:text-white transition-colors">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
             `).join('');
             lucide.createIcons();
         }
@@ -290,6 +367,40 @@
             localStorage.setItem('staffSessionId', sessionId);
             renderHistoryList(); // Update active state
             await loadHistory();
+        }
+
+        function deleteSession(id) {
+            if (!confirm("Delete this conversation?")) return;
+
+            // Find the session object in your sessions array
+            const currentSession = sessions.find(s => s.id === id);
+
+            if (!currentSession) {
+                console.error("Session not found for deletion");
+                return;
+            }
+
+            // Remove from local history list
+            sessions = sessions.filter(s => s.id !== id);
+            localStorage.setItem('staffSessions', JSON.stringify(sessions));
+
+            // If you are deleting the currently-open session:
+            if (sessions.length === 0) {
+                initNewSession(); // create a fresh session
+            }
+
+            renderHistoryList();
+
+            // Also tell backend to remove its history (optional)
+            const response = fetch(`/api/deleteChatTable`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    session: currentSession,
+                })
+            });
+
+
         }
 
         // Load Chat History
@@ -309,7 +420,14 @@
             `;
 
             try {
-                const response = await fetch(`/api/history?sessionId=${sessionId}`);
+                const currentSession = sessions.find(s => s.id === sessionId);
+
+                const response = await fetch(`/api/history`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session: currentSession })
+                });
+
                 const data = await response.json();
                 
                 if (data.history && data.history.length > 0) {
@@ -378,14 +496,17 @@
             // Add to sessions list if not present (first message)
             let currentSession = sessions.find(s => s.id === sessionId);
             if (!currentSession) {
-                currentSession = {
+                /*currentSession = {
                     id: sessionId,
                     title: text.substring(0, 25) + (text.length > 25 ? '...' : ''),
                     timestamp: new Date().toISOString()
                 };
                 sessions.unshift(currentSession);
                 localStorage.setItem('staffSessions', JSON.stringify(sessions));
-                renderHistoryList();
+                renderHistoryList();*/
+                alert("Error: No chat session found. Creating a new one.");
+                await initNewSession();
+                return sendMessage(); // retry
             } else if (currentSession.title === 'New Conversation') {
                 // Update title if it was generic
                 currentSession.title = text.substring(0, 25) + (text.length > 25 ? '...' : '');
@@ -427,7 +548,9 @@
                         message: text,
                         context: 'Staff',
                         sessionId: sessionId,
-                        userEmail: userEmail
+                        userEmail: userEmail,
+                        table_id: currentSession.table_id,
+                        ai_type: "staff"
                     })
                 });
                 
@@ -506,11 +629,31 @@
             }
         }
 
+        let selectedUploadMode = null;
+
+        // Toggle menu visibility
+        function toggleUploadMenu() {
+            const menu = document.getElementById("uploadMenu");
+            menu.classList.toggle("hidden");
+        }
+
+        // User chooses staff or public
+        function chooseUploadMode(mode) {
+            selectedUploadMode = mode;
+
+            // Close menu
+            document.getElementById("uploadMenu").classList.add("hidden");
+
+            // Trigger file picker
+            document.getElementById("fileInput").click();
+        }
+
         async function handleFileUpload(input) {
             if (input.files && input.files[0]) {
                 const file = input.files[0];
                 const formData = new FormData();
                 formData.append('file', file);
+                formData.append('selectedUploadMode', selectedUploadMode)
 
                 // Show uploading state
                 const loadingMsgId = Date.now();
