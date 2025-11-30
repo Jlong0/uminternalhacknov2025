@@ -12,14 +12,14 @@ from datetime import datetime, timedelta
 
 # WARNING: In a production environment, NEVER expose API keys directly in client-side code.
 # Use environment variables (st.secrets) and a secure backend for actual API calls.
-JAMAI_API_KEY_PUBLIC = "jamai_pat_30e45ace74e9284c426bf75d0bcb6a87f31d803ab8b13e62"
-JAMAI_PROJECT_ID_PUBLIC = "proj_80b7460a8813de2e8b5b2b61"
+JAMAI_API_KEY_PUBLIC = "jamai_pat_0b56222ffbb0652e9f0d94e251b5764fa3235afdb2300455"
+JAMAI_PROJECT_ID_PUBLIC = "proj_61fc83a49e0b5b9d0a328a0c"
 
-JAMAI_API_KEY_BOOKING = "jamai_pat_7c9201cf904fb914e72eca3181711a4970b736616f42145d"
-JAMAI_PROJECT_ID_BOOKING = "proj_4eb8d97ae3ef1590fab7ceda"
+JAMAI_API_KEY_BOOKING = "jamai_pat_9a59c8a18706c2ece413173bad6e972ed66505b90d9c3e90"
+JAMAI_PROJECT_ID_BOOKING = "proj_06f08ce75d8309594310ba5b"
 
-JAMAI_API_KEY_STAFF = "jamai_pat_b4d23bae8785364a099f2ed30e33237bd5dafc04cf1c67fc"
-JAMAI_PROJECT_ID_STAFF = "proj_d694b4acbe36d58b664d68de"
+JAMAI_API_KEY_STAFF = "jamai_pat_62ed5e0b58887133f89adf908674e8a3c6bfa022613ecdde"
+JAMAI_PROJECT_ID_STAFF = "proj_f53f079883ae56c0170ab5dd"
 
 #JAMAI_TABLE_ID = "SOP_action_V3" # The ID of your JamAI Action Table
 #JAMAI_KNOWLEDGE_TABLE_ID = "SOP Medical Assistant In Primary Health Care Part 3" # The ID of your JamAI Knowledge Table
@@ -143,6 +143,51 @@ def cancel_booking(doctor_name, date, time, patient_email):
     except Exception as e:
         print(f"Cancel Booking Error: {e}")
         return {'success': False, 'message': str(e)}
+
+def upload_file_to_jamai(file_path):
+    try:
+        response = jamai_client_public.file.upload_file(
+            file_path=file_path,
+        )
+        return response.uri
+    except Exception as e:
+        print(f"Error embedding file: {e}")
+        raise e
+
+def upload_doc(url):
+    try:
+        completion = jamai_client_public.table.add_table_rows(
+            table_type="action",
+            request=protocol.MultiRowAddRequest(
+                table_id="FAQ",
+                data=[{"doc_input": url}],
+                stream=False  # We wait for the full response for simplicity in this Streamlit app
+            )
+        )
+
+        # The response structure for add_table_rows (non-streaming) contains the rows.
+        # We need to extract the AI's response from the output column.
+        # Assuming the output column is named 'AI' based on standard JamAI chat tables.
+
+        if completion.rows and len(completion.rows) > 0:
+            # Get the first row's columns
+            row_columns = completion.rows[0].columns
+
+            # Debugging: Print received columns to console
+            print(f"DEBUG: Received columns from JamAI: {list(row_columns.keys())}")
+
+            # Find the 'AI' column or the last column which usually contains the response
+            if "user_output" in row_columns:
+
+                ai_response = row_columns["user_output"].text
+            else:
+                # Fallback: return the text of the last column
+                ai_response = list(row_columns.values())[-1].text
+
+            return f"User: {url}\n Action Table: {ai_response}"
+
+    except Exception as e:
+        return f"Error connecting to JamAI: {str(e)}"
 
 
 def get_jam_ai_response(user_message, model_context, ai_type, session_id=None, user_email=None):
