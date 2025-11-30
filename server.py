@@ -1,5 +1,9 @@
+import base64
+
 from flask import Flask, request, jsonify, send_from_directory
-from utils import delete_table, create_new_chat_table, post_chat_table, get_jam_ai_response, get_chat_history, embed_file_in_jamai
+
+from utils import delete_table, create_new_chat_table, post_chat_table, get_jam_ai_response, get_chat_history, \
+    embed_file_in_jamai, upload_doc, upload_file_to_jamai
 from auth import login_user, sign_up_user, supabase_staff
 import os
 import json
@@ -68,7 +72,6 @@ def chat_endpoint():
     user_message = data.get('message')
     table_id = data.get('table_id')
     ai_type = data.get("ai_type")
-    print(ai_type)
     # Context determines if it's 'General Knowledge' (Patient) or 'Staff'
     context = data.get('context', 'General Knowledge') 
     user_email = data.get('userEmail') # Get user email from request
@@ -100,7 +103,6 @@ def chat_endpoint():
 def history_endpoint():
     data = request.json
     current_session = data.get("session")
-    print(current_session)
 
     if not current_session:
         return jsonify({'error': 'Session ID is required'}), 400
@@ -121,7 +123,6 @@ def new_chat_table_endpoint():
         return {"error": "Missing base_table_id"}, 400
 
     new_table_id = create_new_chat_table(base_table_id, user)
-    print(new_table_id)
 
     if new_table_id is None:
         return {"error": "Failed to create chat table"}, 500
@@ -232,28 +233,42 @@ def upload_file():
     
     file = request.files['file']
     selected_upload_mode = request.form.get('selectedUploadMode')
+    functions = request.form.get('function')
+    session = request.form.get('current_session')
+    current_session = json.loads(session)
     
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
         
     if file:
         try:
+
             # Create a temporary file to save the uploaded content
             # We need to preserve the extension for JamAI to know the file type
             suffix = os.path.splitext(file.filename)[1]
             with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
                 file.save(tmp.name)
                 tmp_path = tmp.name
-                
+
             # Embed the file
             # Note: You might want to use different tables for staff vs patient if needed
             # We use the 'Uploaded' Knowledge Table for file storage
-            response = embed_file_in_jamai(tmp_path, selected_upload_mode)
+            if functions == "upload":
+                url = upload_file_to_jamai(tmp_path)
+                action_response = upload_doc(url)
+                response = post_chat_table(action_response, "public", current_session.get('table_id'))
+                print(response)
+
+                return jsonify({"success": True, "message": response})
+
+
+            else:
+                response = embed_file_in_jamai(tmp_path, selected_upload_mode)
             
-            # Clean up the temp file
-            os.unlink(tmp_path)
-            
-            return jsonify({'success': True, 'message': f'File {file.filename} uploaded and embedded successfully.'})
+                # Clean up the temp file
+                os.unlink(tmp_path)
+
+                return jsonify({'success': True, 'message': f'File {file.filename} uploaded and embedded successfully.'})
             
         except Exception as e:
             # Clean up if something fails

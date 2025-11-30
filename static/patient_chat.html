@@ -668,11 +668,13 @@
         }
 
         async function handleFileUpload(input) {
+            let currentSession = sessions.find(s => s.id === sessionId);
             if (input.files && input.files[0]) {
                 const file = input.files[0];
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('function', 'upload')
+                formData.append('current_session', JSON.stringify(currentSession))
 
                 // Show uploading state
                 const loadingMsgId = Date.now();
@@ -692,19 +694,67 @@
                     });
                     
                     const data = await response.json();
+
                     
                     // Remove loading message
                     messages = messages.filter(m => m.id !== loadingMsgId);
                     
                     if (data.success) {
                         // Add success message
-                        const successMsg = {
+                        /*const successMsg = {
                             id: Date.now(),
                             role: 'assistant',
                             content: `✅ Successfully uploaded **${file.name}**. I can now answer questions about it.`,
                             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                         };
                         messages.push(successMsg);
+                        sendMessage();*/
+                        try {
+                            /*console.log("DEBUG table_id:", currentSession.table_id);
+                            const response = await fetch('/api/chat', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    message: "",
+                                    context: 'General Knowledge',
+                                    sessionId: sessionId,
+                                    userEmail: userEmail,
+                                    table_id: currentSession.table_id,
+                                    ai_type: "public"
+                                })
+                            });*/
+
+                            /*const data = await response.json();*/
+
+                            isLoading = false;
+
+                            if (data.error) {
+                                throw new Error(data.error);
+                            }
+
+                            const aiMsg = {
+                                id: Date.now() + 1,
+                                role: 'assistant',
+                                content: data.response,
+                                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                            };
+                            messages.push(aiMsg);
+                            renderMessages();
+
+                        } catch (error) {
+                            isLoading = false;
+                            console.error('Error:', error);
+                            const errorMsg = {
+                                id: Date.now() + 1,
+                                role: 'assistant',
+                                content: "Sorry, I'm having trouble connecting to the server. Please try again later.",
+                                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                            };
+                            messages.push(errorMsg);
+                            renderMessages();
+                        }
                     } else {
                         throw new Error(data.error || 'Upload failed');
                     }
