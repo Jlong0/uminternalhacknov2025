@@ -387,6 +387,62 @@
             </div>
             
             <div class="grid gap-6">
+                <!-- Theme Configuration -->
+                <div class="rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+                    <div class="flex flex-col space-y-1.5 p-6">
+                        <h3 class="font-semibold leading-none tracking-tight">Theme Configuration</h3>
+                        <p class="text-sm text-muted-foreground">Customize the website colors and gradients</p>
+                    </div>
+                    <div class="p-6 pt-0 space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- Primary Color -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium leading-none">Primary Color</label>
+                                <div class="flex items-center gap-3">
+                                    <input type="color" id="theme-primary" class="h-10 w-20 p-1 rounded border border-input cursor-pointer">
+                                    <span id="theme-primary-val" class="text-sm text-muted-foreground font-mono">#000000</span>
+                                </div>
+                                <p class="text-xs text-muted-foreground">Main brand color used for buttons and highlights.</p>
+                            </div>
+
+                            <!-- Gradient From -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium leading-none">Gradient Start</label>
+                                <div class="flex items-center gap-3">
+                                    <input type="color" id="theme-gradient-from" class="h-10 w-20 p-1 rounded border border-input cursor-pointer">
+                                    <span id="theme-gradient-from-val" class="text-sm text-muted-foreground font-mono">#000000</span>
+                                </div>
+                                <p class="text-xs text-muted-foreground">Starting color for gradients.</p>
+                            </div>
+
+                            <!-- Gradient To -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium leading-none">Gradient End</label>
+                                <div class="flex items-center gap-3">
+                                    <input type="color" id="theme-gradient-to" class="h-10 w-20 p-1 rounded border border-input cursor-pointer">
+                                    <span id="theme-gradient-to-val" class="text-sm text-muted-foreground font-mono">#000000</span>
+                                </div>
+                                <p class="text-xs text-muted-foreground">Ending color for gradients.</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-border">
+                            <h4 class="text-sm font-medium mb-3">Quick Presets</h4>
+                            <div class="flex gap-3">
+                                <button onclick="applyThemePreset('#ea580c', '#f97316')" class="w-8 h-8 rounded-full bg-gradient-to-r from-orange-600 to-orange-500 ring-2 ring-offset-2 ring-transparent hover:ring-primary transition-all" title="Orange Sunset"></button>
+                                <button onclick="applyThemePreset('#2563eb', '#4f46e5')" class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 ring-2 ring-offset-2 ring-transparent hover:ring-primary transition-all" title="Ocean Blue"></button>
+                                <button onclick="applyThemePreset('#16a34a', '#22c55e')" class="w-8 h-8 rounded-full bg-gradient-to-r from-green-600 to-green-500 ring-2 ring-offset-2 ring-transparent hover:ring-primary transition-all" title="Nature Green"></button>
+                                <button onclick="applyThemePreset('#9333ea', '#c084fc')" class="w-8 h-8 rounded-full bg-gradient-to-r from-purple-600 to-purple-400 ring-2 ring-offset-2 ring-transparent hover:ring-primary transition-all" title="Royal Purple"></button>
+                                <button onclick="applyThemePreset('#db2777', '#f472b6')" class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-600 to-pink-400 ring-2 ring-offset-2 ring-transparent hover:ring-primary transition-all" title="Hot Pink"></button>
+                            </div>
+                        </div>
+
+                        <button onclick="saveThemeConfig()" class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full md:w-auto">
+                            Save Theme Settings
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Announcement Banner -->
                 <div class="rounded-xl border border-border bg-card text-card-foreground shadow-sm">
                     <div class="flex flex-col space-y-1.5 p-6">
@@ -505,12 +561,165 @@
     </main>
 
     <script>
+        // Helper: Hex to HSL
+        function hexToHSL(H) {
+            // Convert hex to RGB first
+            let r = 0, g = 0, b = 0;
+            if (H.length == 4) {
+                r = "0x" + H[1] + H[1];
+                g = "0x" + H[2] + H[2];
+                b = "0x" + H[3] + H[3];
+            } else if (H.length == 7) {
+                r = "0x" + H[1] + H[2];
+                g = "0x" + H[3] + H[4];
+                b = "0x" + H[5] + H[6];
+            }
+            // Then to HSL
+            r /= 255;
+            g /= 255;
+            b /= 255;
+            let cmin = Math.min(r,g,b),
+                cmax = Math.max(r,g,b),
+                delta = cmax - cmin,
+                h = 0,
+                s = 0,
+                l = 0;
+
+            if (delta == 0)
+                h = 0;
+            else if (cmax == r)
+                h = ((g - b) / delta) % 6;
+            else if (cmax == g)
+                h = (b - r) / delta + 2;
+            else
+                h = (r - g) / delta + 4;
+
+            h = Math.round(h * 60);
+
+            if (h < 0)
+                h += 360;
+
+            l = (cmax + cmin) / 2;
+            s = delta == 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
+            s = +(s * 100).toFixed(1);
+            l = +(l * 100).toFixed(1);
+
+            return h + " " + s + "% " + l + "%";
+        }
+
+        function hslToHex(h, s, l) {
+            s /= 100;
+            l /= 100;
+            let c = (1 - Math.abs(2 * l - 1)) * s,
+                x = c * (1 - Math.abs(((h / 60) % 2) - 1)),
+                m = l - c / 2,
+                r = 0,
+                g = 0,
+                b = 0;
+
+            if (0 <= h && h < 60) {
+                r = c; g = x; b = 0;
+            } else if (60 <= h && h < 120) {
+                r = x; g = c; b = 0;
+            } else if (120 <= h && h < 180) {
+                r = 0; g = c; b = x;
+            } else if (180 <= h && h < 240) {
+                r = 0; g = x; b = c;
+            } else if (240 <= h && h < 300) {
+                r = x; g = 0; b = c;
+            } else if (300 <= h && h < 360) {
+                r = c; g = 0; b = x;
+            }
+            r = Math.round((r + m) * 255).toString(16);
+            g = Math.round((g + m) * 255).toString(16);
+            b = Math.round((b + m) * 255).toString(16);
+
+            if (r.length == 1) r = "0" + r;
+            if (g.length == 1) g = "0" + g;
+            if (b.length == 1) b = "0" + b;
+
+            return "#" + r + g + b;
+        }
+
+        function parseHslString(hslStr) {
+            const parts = hslStr.split(' ');
+            if (parts.length === 3) {
+                const h = parseFloat(parts[0]);
+                const s = parseFloat(parts[1].replace('%', ''));
+                const l = parseFloat(parts[2].replace('%', ''));
+                return { h, s, l };
+            }
+            return null;
+        }
+
+        async function saveThemeConfig() {
+            const primaryHex = document.getElementById('theme-primary').value;
+            const fromColor = document.getElementById('theme-gradient-from').value;
+            const toColor = document.getElementById('theme-gradient-to').value;
+            
+            const primaryHsl = hexToHSL(primaryHex);
+
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        theme: {
+                            primary_color: primaryHsl,
+                            gradient_from: fromColor,
+                            gradient_to: toColor
+                        }
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('Theme settings saved!');
+                    // Apply locally
+                    document.documentElement.style.setProperty('--primary', primaryHsl);
+                    document.documentElement.style.setProperty('--ring', primaryHsl);
+                }
+            } catch (error) {
+                console.error('Error saving theme:', error);
+                alert('Failed to save theme settings.');
+            }
+        }
+
+        function applyThemePreset(from, to) {
+            document.getElementById('theme-gradient-from').value = from;
+            document.getElementById('theme-gradient-to').value = to;
+            document.getElementById('theme-gradient-from-val').textContent = from;
+            document.getElementById('theme-gradient-to-val').textContent = to;
+            
+            document.getElementById('theme-primary').value = from;
+            document.getElementById('theme-primary-val').textContent = from;
+        }
+
         // Load Config on Start
         async function loadConfig() {
             try {
                 const response = await fetch('/api/config');
                 const config = await response.json();
                 
+                // Theme
+                if (config.theme) {
+                    if (config.theme.gradient_from) {
+                        document.getElementById('theme-gradient-from').value = config.theme.gradient_from;
+                        document.getElementById('theme-gradient-from-val').textContent = config.theme.gradient_from;
+                    }
+                    if (config.theme.gradient_to) {
+                        document.getElementById('theme-gradient-to').value = config.theme.gradient_to;
+                        document.getElementById('theme-gradient-to-val').textContent = config.theme.gradient_to;
+                    }
+                    if (config.theme.primary_color) {
+                        const hsl = parseHslString(config.theme.primary_color);
+                        if (hsl) {
+                            const hex = hslToHex(hsl.h, hsl.s, hsl.l);
+                            document.getElementById('theme-primary').value = hex;
+                            document.getElementById('theme-primary-val').textContent = hex;
+                        }
+                    }
+                }
+
                 // Banner
                 if (config.banner) {
                     document.getElementById('banner-text').value = config.banner.text || '';
@@ -658,6 +867,17 @@
                 alert('Failed to update features.');
             }
         }
+
+        // Update hex labels on input change
+        document.getElementById('theme-primary').addEventListener('input', (e) => {
+            document.getElementById('theme-primary-val').textContent = e.target.value;
+        });
+        document.getElementById('theme-gradient-from').addEventListener('input', (e) => {
+            document.getElementById('theme-gradient-from-val').textContent = e.target.value;
+        });
+        document.getElementById('theme-gradient-to').addEventListener('input', (e) => {
+            document.getElementById('theme-gradient-to-val').textContent = e.target.value;
+        });
 
         // Initialize
         loadConfig();
